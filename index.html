@@ -332,6 +332,21 @@ tr.row-clickable:hover td{background:rgba(255,255,255,0.02);}
 .m21-badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;background:rgba(255,255,255,.07)}
 .m21-danger{color:#ff9a9a}
 @media(max-width:760px){.m21-kpis{grid-template-columns:repeat(2,1fr)}.m21-photo-grid{grid-template-columns:repeat(3,1fr)}}
+</style><style>
+/* ===== FL ELÉTRICA MOBILE 2.1.1 BUGFIX ===== */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{min-height:100vh;min-height:100dvh}
+@media(max-width:760px){
+ body{padding-bottom:calc(105px + env(safe-area-inset-bottom))!important}
+ .mobile-fab{position:fixed!important;right:18px!important;bottom:calc(24px + env(safe-area-inset-bottom))!important;width:58px!important;height:58px!important;z-index:2147483001!important}
+ .mobile-menu{position:fixed!important;right:14px!important;bottom:calc(94px + env(safe-area-inset-bottom))!important;max-height:calc(100dvh - 125px)!important;z-index:2147483000!important}
+ .mobile-menu-backdrop{z-index:2147479999!important}
+ .mobile-menu button{min-height:48px!important;touch-action:manipulation}
+ .mobile-fab{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+ .mobile-menu-backdrop{touch-action:manipulation}
+ input,select,textarea,button{touch-action:manipulation}
+}
+.mobile-menu[style*="display: none"],.mobile-menu-backdrop[style*="display: none"]{pointer-events:none!important}
 </style></head>
 <body>
 <div class="app-shell">
@@ -2031,6 +2046,52 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<script>
+(function(){
+'use strict';
+const items=[
+ ['inicio','🏠','Início'],['clientes','👥','Clientes'],['agenda','📅','Agenda'],
+ ['servicos','🔧','Visitas / Serviços'],['orcamentos','🧾','Orçamentos'],['ordens','📋','Ordens de Serviço'],
+ ['financeiro','💰','Financeiro'],['fotos','📸','Fotos / Serviços'],['relatorios','📊','Relatórios'],
+ ['precos','💵','Tabela de Preços'],['config','⚙️','Configurações']
+];
+let fab,menu,back,opened=false;
+function closeMenu(){opened=false;if(menu)menu.style.display='none';if(back)back.style.display='none';if(fab){fab.classList.remove('open');fab.setAttribute('aria-expanded','false')}}
+function openMenu(){opened=true;if(menu)menu.style.display='block';if(back)back.style.display='block';if(fab){fab.classList.add('open');fab.setAttribute('aria-expanded','true')}}
+function toggle(e){if(e)e.preventDefault();opened?closeMenu():openMenu()}
+function nav(key){
+ closeMenu();
+ try{
+  if(window.FL21&&key==='inicio')return FL21.dashboard();
+  if(window.FL21&&(key==='agenda'||key==='servicos'))return FL21.visitList();
+  if(window.FL21&&key==='ordens')return FL21.listOS();
+  if(window.FL21&&key==='fotos')return FL21.listOS();
+  if(window.goTo)return window.goTo(key);
+  const el=document.querySelector(`[data-view="${key}"],[data-nav="${key}"]`);
+  if(el)el.click();
+ }catch(err){console.error('FL mobile nav',err)}
+}
+function mount(){
+ if(document.getElementById('m21stableFab'))return;
+ fab=document.createElement('button');fab.id='m21stableFab';fab.className='mobile-fab';fab.type='button';
+ fab.innerHTML='☰';fab.setAttribute('aria-label','Abrir menu');fab.setAttribute('aria-expanded','false');
+ back=document.createElement('div');back.id='m21stableBack';back.className='mobile-menu-backdrop';back.style.display='none';
+ menu=document.createElement('nav');menu.id='m21stableMenu';menu.className='mobile-menu';menu.style.display='none';
+ menu.innerHTML='<h3>⚡ FL Elétrica</h3>'+items.map(i=>`<button type="button" data-m21-key="${i[0]}"><span class="mi">${i[1]}</span><span>${i[2]}</span></button>`).join('');
+ document.body.append(back,menu,fab);
+ fab.addEventListener('click',toggle,{passive:false});
+ fab.addEventListener('touchend',e=>{e.preventDefault();toggle(e)},{passive:false});
+ back.addEventListener('click',closeMenu);
+ menu.addEventListener('click',e=>{const b=e.target.closest('[data-m21-key]');if(b){e.preventDefault();e.stopPropagation();nav(b.dataset.m21Key)}});
+ menu.addEventListener('touchend',e=>{const b=e.target.closest('[data-m21-key]');if(b){e.preventDefault();e.stopPropagation();nav(b.dataset.m21Key)}},{passive:false});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+ window.addEventListener('resize',()=>{if(window.innerWidth>760)closeMenu()});
+}
+function boot(){mount();if(window.innerWidth>760)closeMenu()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
 </body>
