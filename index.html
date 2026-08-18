@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b1220"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#081321">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FL Elétrica">
+<title>Orçamento FL Elétrica</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy-950:#081321;
+  --navy-900:#0c1b2e;
+  --navy-800:#122942;
+  --navy-700:#193a5c;
+  --navy-600:#224d78;
+  --amber-500:#f5a623;
+  --amber-400:#ffbe4d;
+  --amber-600:#d68a0f;
+  --copper:#c46a3a;
+  --ok-500:#3ecf8e;
+  --danger-500:#e6584f;
+  --ink-050:#f4f7fb;
+  --ink-200:#c7d3e0;
+  --ink-400:#8ea0b6;
+  --ink-600:#5c7089;
+  --line:rgba(199,211,224,0.12);
+  --radius:10px;
+  --font-display: 'Segoe UI Semibold', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --font-body: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Consolas', 'SFMono-Regular', Menlo, monospace;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(245,166,35,0.06), transparent 60%),
+    var(--navy-950);
+  color:var(--ink-050);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber-500);color:var(--navy-950);}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+
+/* ---------- Shell ---------- */
+.app-shell{display:flex;min-height:100vh;}
+
+.sidebar{
+  width:230px;flex:0 0 230px;
+  background:linear-gradient(180deg,var(--navy-900),var(--navy-950));
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  padding:22px 14px;
+  position:sticky;top:0;height:100vh;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:4px 8px 20px 8px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:14px;
+}
+.brand-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(145deg,var(--amber-500),var(--copper));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:var(--navy-950);font-size:16px;
+  box-shadow:0 0 0 1px rgba(245,166,35,0.35), 0 4px 14px rgba(245,166,35,0.25);
+  flex:0 0 auto;
+}
+.brand-text{line-height:1.15;}
+.brand-text b{display:block;font-size:13.5px;letter-spacing:.2px;color:var(--ink-050);}
+.brand-text span{display:block;font-size:10.5px;color:var(--amber-400);letter-spacing:.6px;text-transform:uppercase;}
+
+.nav{display:flex;flex-direction:column;gap:3px;flex:1;overflow-y:auto;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 12px;border-radius:8px;
+  color:var(--ink-200);text-decoration:none;
+  font-size:13.5px;font-weight:500;
+  cursor:pointer;border:1px solid transparent;
+  background:transparent;text-align:left;width:100%;
+  transition:background .12s ease, color .12s ease;
+}
+.nav-item .ic{width:18px;height:18px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--ink-400);}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(--ink-050);}
+.nav-item.active{
+  background:linear-gradient(90deg, rgba(245,166,35,0.14), rgba(245,166,35,0.02));
+  color:var(--ink-050);
+  border-color:rgba(245,166,35,0.25);
+}
+.nav-item.active .ic{color:var(--amber-500);}
+.nav-divider{height:1px;background:var(--line);margin:10px 4px;}
+.nav-foot{font-size:10.5px;color:var(--ink-600);padding:10px 10px 0;border-top:1px solid var(--line);margin-top:10px;letter-spacing:.3px;}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 30px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:rgba(8,19,33,0.85);backdrop-filter:blur(8px);z-index:20;
+}
+.topbar h1{font-family:var(--font-display);font-size:19px;margin:0;font-weight:700;letter-spacing:.2px;}
+.topbar .sub{font-size:12px;color:var(--ink-400);margin-top:3px;}
+.content{padding:26px 30px 60px;flex:1;}
+
+/* ---------- primitives ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:8px;border:1px solid var(--line);
+  background:var(--navy-800);color:var(--ink-050);
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:transform .08s ease, background .12s ease, border-color .12s ease;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--navy-700);border-color:var(--navy-600);}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:linear-gradient(180deg,var(--amber-400),var(--amber-600));color:#231400;border-color:transparent;box-shadow:0 4px 14px rgba(245,166,35,0.22);}
+.btn-primary:hover{filter:brightness(1.05);background:linear-gradient(180deg,var(--amber-400),var(--amber-600));}
+.btn-ghost{background:transparent;border-color:var(--line);}
+.btn-danger{background:rgba(230,88,79,0.12);border-color:rgba(230,88,79,0.35);color:#ff9d97;}
+.btn-danger:hover{background:rgba(230,88,79,0.2);}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:7px;}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:8px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;
+}
+.grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:1000px){.grid-4{grid-template-columns:repeat(2,1fr);}.grid-3{grid-template-columns:repeat(2,1fr);}}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.field label{font-size:12px;color:var(--ink-400);font-weight:600;letter-spacing:.2px;}
+.field input,.field select,.field textarea{
+  background:var(--navy-900);border:1px solid var(--line);border-radius:8px;
+  padding:10px 12px;color:var(--ink-050);font-size:13.5px;outline:none;
+  transition:border-color .12s ease;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber-500);}
+.field textarea{resize:vertical;min-height:70px;}
+.field-hint{font-size:11px;color:var(--ink-600);}
+.field-row{display:flex;gap:12px;}
+.field-row>.field{flex:1;}
+
+table{width:100%;border-collapse:collapse;}
+th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--ink-400);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);
+}
+td{padding:12px;font-size:13.5px;border-bottom:1px solid var(--line);color:var(--ink-200);}
+tr:last-child td{border-bottom:none;}
+tr.row-clickable{cursor:pointer;}
+tr.row-clickable:hover td{background:rgba(255,255,255,0.02);}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px;}
+.badge-amber{background:rgba(245,166,35,0.15);color:var(--amber-400);}
+.badge-ok{background:rgba(62,207,142,0.15);color:var(--ok-500);}
+.badge-danger{background:rgba(230,88,79,0.15);color:#ff9d97;}
+.badge-neutral{background:rgba(199,211,224,0.1);color:var(--ink-400);}
+
+.empty{
+  text-align:center;padding:60px 20px;color:var(--ink-600);
+}
+.empty .ic{font-size:34px;margin-bottom:10px;opacity:.5;}
+.empty b{color:var(--ink-200);display:block;margin-bottom:4px;font-size:14px;}
+
+.stat{padding:18px;border-radius:var(--radius);border:1px solid var(--line);background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));}
+.stat .lbl{font-size:11.5px;color:var(--ink-400);text-transform:uppercase;letter-spacing:.4px;font-weight:700;}
+.stat .val{font-family:var(--font-display);font-size:26px;font-weight:800;margin-top:8px;}
+.stat .val.amber{color:var(--amber-500);}
+.stat .foot{font-size:11.5px;color:var(--ink-600);margin-top:6px;}
+
+/* ---------- modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(4,9,16,0.7);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-start;justify-content:center;
+  z-index:100;padding:40px 20px;overflow-y:auto;
+}
+.modal{
+  background:var(--navy-900);border:1px solid var(--line);border-radius:14px;
+  width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation:modalIn .16s ease;
+}
+.modal.wide{max-width:820px;}
+@keyframes modalIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line);}
+.modal-head h3{margin:0;font-size:15.5px;font-family:var(--font-display);}
+.modal-body{padding:20px 22px;max-height:70vh;overflow-y:auto;}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--line);}
+.modal-close{background:transparent;border:none;color:var(--ink-400);font-size:20px;cursor:pointer;line-height:1;padding:4px;}
+.modal-close:hover{color:var(--ink-050);}
+
+/* ---------- items table (orcamento builder) ---------- */
+.item-row{display:grid;grid-template-columns:1fr 70px 100px 100px 34px;gap:8px;align-items:center;margin-bottom:8px;}
+.item-row input{width:100%;}
+.item-total-bar{display:flex;justify-content:flex-end;gap:26px;padding:14px 4px 4px;border-top:1px dashed var(--line);margin-top:8px;}
+.item-total-bar .lbl{color:var(--ink-400);font-size:12.5px;}
+.item-total-bar .val{font-weight:700;}
+
+/* ---------- price lookup ---------- */
+.price-search{position:relative;}
+.price-card{
+  border:1px solid var(--line);border-radius:9px;padding:13px 14px;margin-bottom:8px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,0.015);
+}
+.price-card .meta{font-size:11px;color:var(--ink-600);margin-top:2px;}
+.price-vals{display:flex;gap:16px;}
+.price-vals div{text-align:center;}
+.price-vals .lbl{font-size:9.5px;text-transform:uppercase;color:var(--ink-600);letter-spacing:.4px;}
+.price-vals .n{font-weight:700;font-family:var(--font-mono);font-size:13px;}
+.price-vals .min .n{color:var(--ink-200);}
+.price-vals .medio .n{color:var(--amber-400);}
+.price-vals .premium .n{color:var(--copper);}
+
+/* ---------- theme swatches ---------- */
+.theme-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.theme-opt{border:2px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;transition:border-color .12s;}
+.theme-opt.selected{border-color:var(--amber-500);}
+.theme-swatch{height:44px;border-radius:6px;margin-bottom:8px;}
+.theme-opt b{font-size:12.5px;}
+
+/* ---------- calc result ---------- */
+.calc-result{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;}
+.calc-result .stat .val{font-size:22px;}
+
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--navy-800);border:1px solid var(--line);border-left:3px solid var(--amber-500);padding:12px 16px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:toastIn .18s ease;min-width:220px;}
+.toast.err{border-left-color:var(--danger-500);}
+.toast.ok{border-left-color:var(--ok-500);}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+
+.logo-preview{width:64px;height:64px;border-radius:10px;object-fit:contain;background:#fff;padding:4px;border:1px solid var(--line);}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;background:var(--navy-800);border:1px solid var(--line);font-size:11.5px;color:var(--ink-400);margin-right:6px;}
+
+.section-title{font-family:var(--font-display);font-size:14px;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:8px;color:var(--ink-050);}
+.section-title .num{color:var(--amber-500);font-family:var(--font-mono);}
+.hr{height:1px;background:var(--line);margin:22px 0;}
+.muted{color:var(--ink-400);font-size:12.5px;}
+.two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}.item-row{grid-template-columns:1fr;}.app-shell{flex-direction:column;}.sidebar{width:100%;flex:none;height:auto;position:relative;}}
+
+
+/* ---------- Mobile / PWA ---------- */
+.mobile-fab{display:none}.mobile-menu{display:none}
+@media(max-width:760px){
+  html,body{min-height:100%;overflow-x:hidden} body{padding-bottom:env(safe-area-inset-bottom)}
+  .app-shell{display:block;min-height:100vh}.sidebar{display:none}.main{width:100%;min-height:100vh}
+  .topbar{position:sticky;top:0;padding:12px 14px;padding-top:calc(10px + env(safe-area-inset-top));min-height:64px;z-index:50}
+  .topbar h1{font-size:17px;padding-right:48px}.topbar .sub{font-size:11px;max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.topbar .chip{display:none}
+  .content{padding:14px 12px calc(92px + env(safe-area-inset-bottom))}.grid-4,.grid-3,.grid-2,.two-col{grid-template-columns:1fr!important}.grid{gap:10px}
+  .stat{padding:14px}.stat .val{font-size:22px}.card{padding:14px;border-radius:12px}
+  .field-row{display:grid;grid-template-columns:1fr;gap:0}.field input,.field select,.field textarea{font-size:16px;min-height:46px}.field textarea{min-height:96px}
+  .btn{min-height:44px;padding:10px 13px}.btn-sm{min-height:40px}
+  .item-row{grid-template-columns:1fr 1fr!important;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.item-row .itDesc{grid-column:1/-1}.item-row .itSub{grid-column:1}.item-row .btn-icon{grid-column:2;justify-self:end}
+  table{display:block;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch} th,td{padding:10px 9px}
+  .modal-overlay{padding:0;align-items:flex-end}.modal,.modal.wide{max-width:none;width:100%;max-height:94vh;border-radius:18px 18px 0 0;border-bottom:0}.modal-body{max-height:70vh;padding:16px}
+  .modal-foot{padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));position:sticky;bottom:0;background:var(--navy-900)}.modal-foot .btn{flex:1;justify-content:center}
+  .theme-pick{grid-template-columns:1fr}.calc-result{grid-template-columns:1fr}.price-card{align-items:flex-start;flex-direction:column}.price-vals{width:100%;justify-content:space-between}
+  .toast-wrap{left:12px;right:12px;bottom:calc(78px + env(safe-area-inset-bottom))}.toast{min-width:0;width:100%}
+  .mobile-fab{display:flex;position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;border:1px solid rgba(245,166,35,.5);background:linear-gradient(145deg,var(--amber-400),var(--amber-600));color:#231400;align-items:center;justify-content:center;font-size:26px;font-weight:900;box-shadow:0 10px 28px rgba(0,0,0,.45);z-index:90;cursor:pointer}
+  .mobile-menu{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:min(310px,calc(100vw - 28px));background:rgba(12,27,46,.98);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.55);z-index:89;transform:translateY(12px) scale(.98);opacity:0;pointer-events:none;transition:.16s ease}
+  .mobile-menu.open{transform:none;opacity:1;pointer-events:auto}.mobile-menu button{width:100%;display:flex;align-items:center;gap:12px;background:transparent;border:0;color:var(--ink-050);padding:12px;border-radius:10px;text-align:left;font-size:14px;font-weight:600}.mobile-menu button:active,.mobile-menu button.active{background:rgba(245,166,35,.13);color:var(--amber-400)}
+  .mobile-menu .micon{width:28px;text-align:center;font-size:20px}.mobile-menu .mtext small{display:block;color:var(--ink-400);font-size:10px;font-weight:400;margin-top:2px}.mobile-menu-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 8px;border-bottom:1px solid var(--line);margin-bottom:5px}.mobile-menu-head b{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--amber-400)}.mobile-menu-head span{font-size:11px;color:var(--ink-600)}
+  .quick-grid{display:grid!important;grid-template-columns:1fr 1fr!important}.quick-grid .btn{width:100%;justify-content:center}
+}
+@media(min-width:761px){.mobile-menu{display:none!important}}
+
+</style>
+<style>
+/* ===== FL ELÉTRICA MOBILE 2.0 ===== */
+:root{--fab-size:58px}
+@media(max-width:760px){
+  body{padding-bottom:88px!important;overflow-x:hidden}
+  #sidebar,.sidebar{display:none!important}
+  #topbar{position:sticky;top:0;z-index:40;min-height:64px;padding:10px 14px!important}
+  #content{padding:12px!important;max-width:100%!important}
+  .grid,.grid-4,.two-col,.field-row{grid-template-columns:1fr!important;display:grid!important}
+  .card{width:100%;box-sizing:border-box}
+  table{min-width:620px}
+  .card:has(table){overflow-x:auto}
+  .btn{min-height:44px}
+  input,select,textarea{min-height:44px!important;font-size:16px!important}
+  .mobile-fab{display:flex!important}
+  .mobile-menu{display:block!important}
+  .mobile-menu-backdrop{display:block!important}
+}
+.mobile-fab{display:none;position:fixed;right:18px;bottom:18px;width:var(--fab-size);height:var(--fab-size);
+  border:0;border-radius:50%;z-index:1001;align-items:center;justify-content:center;
+  font-size:25px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer}
+.mobile-fab.open{transform:rotate(45deg)}
+.mobile-menu,.mobile-menu-backdrop{display:none}
+.mobile-menu{position:fixed;right:14px;bottom:86px;width:min(330px,calc(100vw - 28px));max-height:72vh;overflow:auto;
+  z-index:1000;background:var(--navy-900,#101827);border:1px solid var(--line,#2b3548);
+  border-radius:18px;padding:10px;box-shadow:0 18px 45px rgba(0,0,0,.38)}
+.mobile-menu h3{margin:8px 10px 10px;font-size:14px}
+.mobile-menu button{width:100%;display:flex;align-items:center;gap:12px;padding:13px 12px;margin:3px 0;
+  border:0;border-radius:12px;background:transparent;color:inherit;text-align:left;font-size:15px}
+.mobile-menu button:hover,.mobile-menu button.active{background:rgba(255,255,255,.08)}
+.mobile-menu .mi{width:28px;text-align:center;font-size:20px}
+.mobile-menu-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:999}
+.quick-actions-mobile{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.quick-actions-mobile button{min-height:54px}
+.section-card-mobile{margin-top:14px}
+@media(min-width:761px){.mobile-fab,.mobile-menu,.mobile-menu-backdrop{display:none!important}}
+</style><style>
+/* ===== FL ELÉTRICA MOBILE 2.1 — WORKFLOW ===== */
+.m21-card{background:var(--card,#111b2b);border:1px solid var(--line,#29354a);border-radius:16px;padding:14px;margin-top:12px}
+.m21-flow{display:flex;align-items:center;gap:6px;overflow:auto;padding:4px 0 10px}
+.m21-step{min-width:104px;text-align:center;padding:9px 7px;border-radius:12px;background:rgba(255,255,255,.045);font-size:12px}
+.m21-step.done{background:rgba(40,180,100,.12);border:1px solid rgba(40,180,100,.25)}
+.m21-step.current{background:rgba(70,130,220,.15);border:1px solid rgba(70,130,220,.3)}
+.m21-arrow{opacity:.45}
+.m21-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.m21-kpi{padding:12px;border-radius:13px;background:rgba(255,255,255,.04)}
+.m21-kpi .big{font-size:21px;font-weight:800;margin-top:3px}
+.m21-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.m21-actions .btn{width:100%}
+.m21-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.m21-photo{position:relative;aspect-ratio:1;border-radius:11px;overflow:hidden;background:#0b1220}
+.m21-photo img{width:100%;height:100%;object-fit:cover}
+.m21-photo span{position:absolute;left:5px;bottom:5px;background:rgba(0,0,0,.65);padding:3px 6px;border-radius:7px;font-size:10px}
+.m21-badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;background:rgba(255,255,255,.07)}
+.m21-danger{color:#ff9a9a}
+@media(max-width:760px){.m21-kpis{grid-template-columns:repeat(2,1fr)}.m21-photo-grid{grid-template-columns:repeat(3,1fr)}}
+</style></head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">FL</div>
+      <div class="brand-text"><b>Orçamento FL</b><span>Elétrica</span></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">Orçamento FL Elétrica &middot; v1.0</div>
+  </aside>
+  <div class="main">
+    <div class="topbar" id="topbar"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+<button class="mobile-fab" id="mobileFab" aria-label="Abrir menu" aria-expanded="false">☰</button>
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu-head"><b>FL Elétrica</b><span>Menu principal</span></div>
+  <div id="mobileMenuList"></div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const PRECOS_BASE = [{"categoria": "Instalações básicas", "servico": "Trocar interruptor", "min": 40, "medio": 60, "premium": 100}, {"categoria": "Instalações básicas", "servico": "Instalar plafon de LED", "min": 60, "medio": 100, "premium": 140}, {"categoria": "Instalações e substituições comuns", "servico": "Instalar campainha", "min": 100, "medio": 140, "premium": 220}, {"categoria": "Instalações e substituições comuns", "servico": "Trocar campainha", "min": 60, "medio": 100, "premium": 160}, {"categoria": "Instalações e substituições comuns", "servico": "Instalar sensor de presença", "min": 110, "medio": 170, "premium": 260}, {"categoria": "Instalações e substituições comuns", "servico": "Instalar refletor LED", "min": 100, "medio": 160, "premium": 240}, {"categoria": "Instalações e substituições comuns", "servico": "Instalar fita LED", "min": 80, "medio": 140, "premium": 220}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Passagem de fiação por metro", "min": 10, "medio": 20, "premium": 40}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Instalar conduíte por metro", "min": 20, "medio": 30, "premium": 50}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Instalar canaleta por metro", "min": 10, "medio": 20, "premium": 40}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Instalar eletroduto PVC por metro", "min": 20, "medio": 30, "premium": 50}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Instalar caixa de passagem", "min": 50, "medio": 80, "premium": 140}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Abrir rasgo em parede para fiação", "min": 60, "medio": 110, "premium": 180}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Fechamento de rasgo elétrico", "min": 50, "medio": 100, "premium": 170}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Organização de fiação em quadro elétrico", "min": 140, "medio": 240, "premium": 420}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Revisão de circuito elétrico", "min": 140, "medio": 260, "premium": 480}, {"categoria": "Infraestrutura e passagem de fiação", "servico": "Identificação de circuitos elétricos", "min": 100, "medio": 180, "premium": 310}, {"categoria": "Quadros elétricos e proteção", "servico": "Instalar disjuntor simples", "min": 60, "medio": 100, "premium": 160}, {"categoria": "Quadros elétricos e proteção", "servico": "Trocar disjuntor", "min": 80, "medio": 140, "premium": 200}, {"categoria": "Quadros elétricos e proteção", "servico": "Instalar disjuntor bipolar", "min": 80, "medio": 130, "premium": 220}, {"categoria": "Quadros elétricos e proteção", "servico": "Instalar disjuntor tripolar", "min": 110, "medio": 180, "premium": 290}, {"categoria": "Quadros elétricos e proteção", "servico": "Substituir barramento do quadro", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Quadros elétricos e proteção", "servico": "Organizar quadro de distribuição", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Quadros elétricos e proteção", "servico": "Instalar quadro de distribuição pequeno", "min": 260, "medio": 480, "premium": 840}, {"categoria": "Quadros elétricos e proteção", "servico": "Substituir quadro elétrico completo", "min": 400, "medio": 800, "premium": 1200}, {"categoria": "Iluminação interna", "servico": "Instalar lâmpada LED", "min": 20, "medio": 40, "premium": 70}, {"categoria": "Iluminação interna", "servico": "Trocar lâmpada", "min": 20, "medio": 40, "premium": 60}, {"categoria": "Iluminação interna", "servico": "Instalar luminária pendente", "min": 100, "medio": 170, "premium": 260}, {"categoria": "Iluminação interna", "servico": "Instalar spot embutido", "min": 70, "medio": 120, "premium": 200}, {"categoria": "Iluminação interna", "servico": "Instalar fita LED decorativa", "min": 100, "medio": 180, "premium": 310}, {"categoria": "Iluminação interna", "servico": "Instalar sensor de presença para luz", "min": 110, "medio": 170, "premium": 260}, {"categoria": "Iluminação interna", "servico": "Configurar iluminação automática", "min": 140, "medio": 240, "premium": 420}, {"categoria": "Tomadas e pontos elétricos", "servico": "Instalar tomada para micro-ondas", "min": 100, "medio": 170, "premium": 260}, {"categoria": "Tomadas e pontos elétricos", "servico": "Instalar tomada para geladeira", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Tomadas e pontos elétricos", "servico": "Instalar ponto para TV", "min": 120, "medio": 220, "premium": 360}, {"categoria": "Tomadas e pontos elétricos", "servico": "Instalar ponto elétrico para eletrodomésticos", "min": 140, "medio": 290, "premium": 480}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor simples", "min": 50, "medio": 70, "premium": 120}, {"categoria": "Interruptores e comandos", "servico": "Trocar interruptor simples", "min": 40, "medio": 60, "premium": 100}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor duplo", "min": 60, "medio": 100, "premium": 140}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor triplo", "min": 70, "medio": 120, "premium": 180}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor paralelo", "min": 100, "medio": 170, "premium": 260}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor intermediário", "min": 110, "medio": 190, "premium": 310}, {"categoria": "Interruptores e comandos", "servico": "Instalar dimmer de iluminação", "min": 100, "medio": 160, "premium": 240}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor touch", "min": 120, "medio": 220, "premium": 360}, {"categoria": "Interruptores e comandos", "servico": "Instalar interruptor inteligente", "min": 140, "medio": 260, "premium": 420}, {"categoria": "Interruptores e comandos", "servico": "Configurar automação de iluminação", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Alta potência", "servico": "Trocar chuveiro elétrico", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Alta potência", "servico": "Instalar torneira elétrica", "min": 110, "medio": 180, "premium": 280}, {"categoria": "Alta potência", "servico": "Trocar torneira elétrica", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Alta potência", "servico": "Instalar ponto para chuveiro", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Alta potência", "servico": "Criar circuito dedicado para chuveiro", "min": 260, "medio": 500, "premium": 840}, {"categoria": "Alta potência", "servico": "Instalar tomada 20A para eletrodomésticos", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Alta potência", "servico": "Instalar tomada para forno elétrico", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Alta potência", "servico": "Revisão elétrica para equipamentos de alta potência", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Alta potência", "servico": "Instalar tomada para ar-condicionado", "min": 170, "medio": 310, "premium": 500}, {"categoria": "Diagnóstico e manutenção", "servico": "Visita técnica para diagnóstico", "min": 120, "medio": 185, "premium": 250}, {"categoria": "Diagnóstico e manutenção", "servico": "Identificação de fuga de corrente", "min": 140, "medio": 290, "premium": 480}, {"categoria": "Diagnóstico e manutenção", "servico": "Revisão geral da instalação elétrica", "min": 220, "medio": 420, "premium": 720}, {"categoria": "Diagnóstico e manutenção", "servico": "Manutenção preventiva elétrica", "min": 180, "medio": 360, "premium": 620}, {"categoria": "Diagnóstico e manutenção", "servico": "Verificação de disjuntores e circuitos", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Diagnóstico e manutenção", "servico": "Análise de sobrecarga elétrica", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Diagnóstico e manutenção", "servico": "Teste de continuidade de cabos", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Diagnóstico e manutenção", "servico": "Revisão de quadro de distribuição", "min": 180, "medio": 340, "premium": 540}, {"categoria": "Diagnóstico e manutenção", "servico": "Laudo técnico básico de instalação elétrica", "min": 260, "medio": 480, "premium": 840}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Trocar ventilador de teto", "min": 110, "medio": 190, "premium": 310}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Instalar ventilador com controle remoto", "min": 170, "medio": 290, "premium": 460}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Instalar ventilador com luminária", "min": 170, "medio": 300, "premium": 480}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Manutenção de ventilador de teto", "min": 120, "medio": 220, "premium": 360}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Balanceamento de ventilador", "min": 110, "medio": 180, "premium": 300}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Instalar exaustor elétrico", "min": 140, "medio": 240, "premium": 380}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Instalar campainha elétrica", "min": 100, "medio": 170, "premium": 260}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Instalar porteiro eletrônico simples", "min": 220, "medio": 380, "premium": 620}, {"categoria": "Ventiladores e equipamentos residenciais", "servico": "Substituir campainha ou botão de acionamento", "min": 70, "medio": 130, "premium": 220}, {"categoria": "Circuitos e passagem de cabos", "servico": "Passagem de cabo elétrico por metro", "min": 10, "medio": 20, "premium": 40}, {"categoria": "Circuitos e passagem de cabos", "servico": "Passagem de cabo em conduíte existente", "min": 10, "medio": 20, "premium": 40}, {"categoria": "Circuitos e passagem de cabos", "servico": "Instalar conduíte adicional", "min": 20, "medio": 40, "premium": 70}, {"categoria": "Circuitos e passagem de cabos", "servico": "Instalar canaleta elétrica", "min": 20, "medio": 40, "premium": 60}, {"categoria": "Circuitos e passagem de cabos", "servico": "Criar circuito elétrico novo", "min": 220, "medio": 420, "premium": 720}, {"categoria": "Circuitos e passagem de cabos", "servico": "Criar circuito para ar-condicionado", "min": 260, "medio": 500, "premium": 840}, {"categoria": "Circuitos e passagem de cabos", "servico": "Criar circuito para cozinha elétrica", "min": 260, "medio": 480, "premium": 820}, {"categoria": "Circuitos e passagem de cabos", "servico": "Criar circuito dedicado para máquina de lavar", "min": 240, "medio": 460, "premium": 740}, {"categoria": "Circuitos e passagem de cabos", "servico": "Substituição completa de fiação (por ambiente)", "min": 480, "medio": 840, "premium": 1440}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar padrão de entrada monofásico", "min": 720, "medio": 1440, "premium": 2640}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar padrão de entrada bifásico", "min": 960, "medio": 1800, "premium": 3120}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar padrão de entrada trifásico", "min": 1440, "medio": 2640, "premium": 4560}, {"categoria": "Padrão de entrada e medição", "servico": "Substituir padrão de entrada antigo", "min": 840, "medio": 1680, "premium": 2880}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar caixa de medição", "min": 300, "medio": 540, "premium": 900}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar disjuntor geral do padrão", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Padrão de entrada e medição", "servico": "Passagem de cabos do padrão até o quadro", "min": 240, "medio": 460, "premium": 780}, {"categoria": "Padrão de entrada e medição", "servico": "Adequação de padrão para nova carga", "min": 540, "medio": 1080, "premium": 1920}, {"categoria": "Padrão de entrada e medição", "servico": "Instalar aterramento do padrão", "min": 240, "medio": 460, "premium": 780}, {"categoria": "Padrão de entrada e medição", "servico": "Revisão completa do padrão de entrada", "min": 300, "medio": 540, "premium": 960}, {"categoria": "Quadro de distribuição", "servico": "Instalar quadro de distribuição simples", "min": 300, "medio": 540, "premium": 960}, {"categoria": "Quadro de distribuição", "servico": "Instalar quadro de distribuição completo", "min": 480, "medio": 840, "premium": 1440}, {"categoria": "Quadro de distribuição", "servico": "Substituir quadro elétrico antigo", "min": 420, "medio": 780, "premium": 1320}, {"categoria": "Quadro de distribuição", "servico": "Organizar fiação do quadro elétrico", "min": 240, "medio": 460, "premium": 780}, {"categoria": "Quadro de distribuição", "servico": "Instalar disjuntor no quadro", "min": 70, "medio": 120, "premium": 190}, {"categoria": "Quadro de distribuição", "servico": "Substituir disjuntor", "min": 60, "medio": 110, "premium": 170}, {"categoria": "Quadro de distribuição", "servico": "Instalar DR (diferencial residual)", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Quadro de distribuição", "servico": "Instalar DPS (proteção contra surtos)", "min": 140, "medio": 240, "premium": 420}, {"categoria": "Quadro de distribuição", "servico": "Identificar e etiquetar circuitos", "min": 140, "medio": 240, "premium": 380}, {"categoria": "Quadro de distribuição", "servico": "Revisão completa do quadro elétrico", "min": 240, "medio": 460, "premium": 780}, {"categoria": "Iluminação residencial", "servico": "Instalar luminária simples", "min": 60, "medio": 110, "premium": 180}, {"categoria": "Iluminação residencial", "servico": "Instalar plafon de teto", "min": 70, "medio": 120, "premium": 220}, {"categoria": "Iluminação residencial", "servico": "Instalar spot de iluminação", "min": 60, "medio": 110, "premium": 180}, {"categoria": "Iluminação residencial", "servico": "Instalar trilho de iluminação", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Iluminação residencial", "servico": "Instalar fita de LED", "min": 120, "medio": 220, "premium": 380}, {"categoria": "Iluminação residencial", "servico": "Criar novo ponto de iluminação", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Iluminação residencial", "servico": "Trocar lâmpada comum", "min": 20, "medio": 40, "premium": 70}, {"categoria": "Iluminação residencial", "servico": "Substituir luminária antiga", "min": 70, "medio": 130, "premium": 220}, {"categoria": "Iluminação residencial", "servico": "Instalar iluminação externa", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Iluminação residencial", "servico": "Revisão do circuito de iluminação", "min": 140, "medio": 240, "premium": 420}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada simples", "min": 80, "medio": 120, "premium": 180}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada dupla", "min": 60, "medio": 110, "premium": 180}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada tripla", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Tomadas e pontos de energia", "servico": "Trocar tomada antiga", "min": 40, "medio": 70, "premium": 120}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada 20A", "min": 70, "medio": 130, "premium": 220}, {"categoria": "Tomadas e pontos de energia", "servico": "Criar novo ponto de tomada", "min": 100, "medio": 175, "premium": 250}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada para cozinha", "min": 80, "medio": 140, "premium": 240}, {"categoria": "Tomadas e pontos de energia", "servico": "Instalar tomada externa", "min": 100, "medio": 170, "premium": 290}, {"categoria": "Tomadas e pontos de energia", "servico": "Corrigir mau contato em tomada", "min": 70, "medio": 130, "premium": 220}, {"categoria": "Tomadas e pontos de energia", "servico": "Revisão de pontos de tomada", "min": 140, "medio": 240, "premium": 420}, {"categoria": "Modernização de instalações antigas", "servico": "Substituição parcial de fiação", "min": 360, "medio": 660, "premium": 1140}, {"categoria": "Modernização de instalações antigas", "servico": "Substituição completa de fiação", "min": 1080, "medio": 2160, "premium": 4200}, {"categoria": "Modernização de instalações antigas", "servico": "Reforma elétrica por ambiente", "min": 420, "medio": 840, "premium": 1440}, {"categoria": "Modernização de instalações antigas", "servico": "Modernização de quadro de distribuição", "min": 480, "medio": 960, "premium": 1680}, {"categoria": "Modernização de instalações antigas", "servico": "Instalar sistema de aterramento", "min": 300, "medio": 550, "premium": 800}, {"categoria": "Modernização de instalações antigas", "servico": "Adequação elétrica para equipamentos modernos", "min": 360, "medio": 780, "premium": 1440}, {"categoria": "Modernização de instalações antigas", "servico": "Reorganização completa de circuitos", "min": 420, "medio": 840, "premium": 1560}, {"categoria": "Modernização de instalações antigas", "servico": "Correção de sobrecarga elétrica", "min": 300, "medio": 600, "premium": 1080}, {"categoria": "Modernização de instalações antigas", "servico": "Atualização de disjuntores antigos", "min": 240, "medio": 500, "premium": 960}, {"categoria": "Modernização de instalações antigas", "servico": "Revisão completa de instalação antiga", "min": 360, "medio": 780, "premium": 1440}, {"categoria": "Instalações completas - residências pequenas", "servico": "Instalação elétrica completa casa até 40m²", "min": 1440, "medio": 2640, "premium": 4800}, {"categoria": "Instalações completas - residências pequenas", "servico": "Instalação elétrica completa casa até 60m²", "min": 1800, "medio": 3600, "premium": 6000}, {"categoria": "Instalações completas - residências pequenas", "servico": "Instalação elétrica completa apartamento pequeno", "min": 1560, "medio": 3000, "premium": 5040}, {"categoria": "Instalações completas - residências pequenas", "servico": "Projeto básico de instalação elétrica", "min": 300, "medio": 540, "premium": 960}, {"categoria": "Instalações completas - residências pequenas", "servico": "Montagem completa do quadro elétrico", "min": 360, "medio": 720, "premium": 1200}, {"categoria": "Instalações completas - residências pequenas", "servico": "Instalação de aterramento residencial", "min": 300, "medio": 600, "premium": 1080}, {"categoria": "Instalações completas - residências pequenas", "servico": "Passagem geral de conduítes", "min": 480, "medio": 960, "premium": 1680}, {"categoria": "Instalações completas - residências pequenas", "servico": "Instalação de caixas elétricas", "min": 240, "medio": 480, "premium": 840}, {"categoria": "Instalações completas - residências pequenas", "servico": "Teste completo da instalação", "min": 180, "medio": 360, "premium": 600}, {"categoria": "Instalações completas - residências médias", "servico": "Instalação elétrica completa casa até 100m²", "min": 3000, "medio": 5040, "premium": 8400}, {"categoria": "Instalações completas - residências médias", "servico": "Instalação elétrica completa casa até 120m²", "min": 3840, "medio": 6600, "premium": 10800}, {"categoria": "Instalações completas - residências médias", "servico": "Instalação elétrica completa casa até 120m² (referência 2)", "min": 4560, "medio": 7800, "premium": 13200}, {"categoria": "Instalações completas - residências médias", "servico": "Projeto elétrico residencial médio", "min": 480, "medio": 840, "premium": 1440}, {"categoria": "Instalações completas - residências médias", "servico": "Planejamento completo de circuitos", "min": 420, "medio": 720, "premium": 1200}, {"categoria": "Instalações completas - residências médias", "servico": "Montagem avançada de quadro elétrico", "min": 540, "medio": 960, "premium": 1680}, {"categoria": "Instalações completas - residências médias", "servico": "Instalação de circuitos dedicados", "min": 420, "medio": 780, "premium": 1440}, {"categoria": "Instalações completas - residências médias", "servico": "Sistema de aterramento completo", "min": 420, "medio": 780, "premium": 1320}, {"categoria": "Instalações completas - residências médias", "servico": "Passagem geral de conduítes da obra", "min": 840, "medio": 1560, "premium": 2640}, {"categoria": "Instalações completas - residências médias", "servico": "Teste e revisão completa da instalação", "min": 300, "medio": 540, "premium": 960}, {"categoria": "Instalações completas - residências grandes", "servico": "Instalação elétrica casa até 150m²", "min": 7200, "medio": 11400, "premium": 18000}, {"categoria": "Instalações completas - residências grandes", "servico": "Instalação elétrica casa até 200m²", "min": 9600, "medio": 14400, "premium": 24000}, {"categoria": "Instalações completas - residências grandes", "servico": "Instalação elétrica casa acima de 250m²", "min": 12000, "medio": 19200, "premium": 31200}, {"categoria": "Instalações completas - residências grandes", "servico": "Projeto elétrico residencial completo", "min": 840, "medio": 1440, "premium": 2400}, {"categoria": "Instalações completas - residências grandes", "servico": "Planejamento de circuitos elétricos", "min": 720, "medio": 1200, "premium": 2040}, {"categoria": "Instalações completas - residências grandes", "servico": "Montagem de quadro elétrico grande", "min": 840, "medio": 1440, "premium": 2400}, {"categoria": "Instalações completas - comércios", "servico": "Instalação elétrica loja pequena", "min": 3000, "medio": 5400, "premium": 9000}, {"categoria": "Instalações completas - comércios", "servico": "Instalação elétrica escritório pequeno", "min": 2640, "medio": 4800, "premium": 8400}, {"categoria": "Instalações completas - comércios", "servico": "Instalação elétrica salão comercial", "min": 3600, "medio": 6240, "premium": 10800}, {"categoria": "Instalações completas - comércios", "servico": "Projeto elétrico comercial básico", "min": 540, "medio": 960, "premium": 1680}, {"categoria": "Instalações completas - comércios", "servico": "Planejamento de circuitos comerciais", "min": 480, "medio": 900, "premium": 1560}, {"categoria": "Instalações completas - comércios", "servico": "Montagem de quadro elétrico comercial", "min": 600, "medio": 1080, "premium": 1920}, {"categoria": "Manutenções rápidas", "servico": "Troca de tomada simples", "min": 40, "medio": 60, "premium": 100}, {"categoria": "Manutenções rápidas", "servico": "Troca de interruptor simples", "min": 40, "medio": 60, "premium": 100}, {"categoria": "Manutenções rápidas", "servico": "Troca de lâmpada", "min": 20, "medio": 40, "premium": 70}, {"categoria": "Manutenções rápidas", "servico": "Instalação de ventilador de teto", "min": 100, "medio": 180, "premium": 300}, {"categoria": "Manutenções rápidas", "servico": "Instalação de chuveiro elétrico", "min": 100, "medio": 190, "premium": 340}, {"categoria": "Manutenções rápidas", "servico": "Correção de mau contato", "min": 70, "medio": 130, "premium": 220}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar chuveiro elétrico", "min": 150, "medio": 250, "premium": 350}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar ventilador de teto", "min": 120, "medio": 220, "premium": 360}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar cooktop elétrico", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar forno elétrico", "min": 140, "medio": 290, "premium": 500}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar depurador ou coifa", "min": 140, "medio": 260, "premium": 460}, {"categoria": "Instalação de equipamentos residenciais", "servico": "Instalar exaustor", "min": 100, "medio": 180, "premium": 300}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Diagnóstico de problema elétrico", "min": 120, "medio": 185, "premium": 250}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Identificação de curto-circuito", "min": 120, "medio": 220, "premium": 360}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Correção de disjuntor desarmando", "min": 110, "medio": 190, "premium": 340}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Reaperto de conexões elétricas", "min": 70, "medio": 140, "premium": 240}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Correção de fiação mal conectada", "min": 110, "medio": 200, "premium": 360}, {"categoria": "Diagnóstico e pequenas correções", "servico": "Revisão de circuito específico", "min": 120, "medio": 220, "premium": 380}];
+</script>
+<script>
+/* ================= Orçamento FL Elétrica =================
+   App single-file (vanilla JS) — clientes, orçamentos, recibos,
+   histórico, consulta de preços, calculadora elétrica, configurações.
+   Persistência via window.storage (por usuário, não compartilhada).
+============================================================ */
+
+/* ---------- Storage helpers ---------- */
+const KEYS = {
+  clientes: 'clientes',
+  orcamentos: 'orcamentos',
+  recibos: 'recibos',
+  despesas: 'despesas',
+  config: 'config',
+  precosCustom: 'precos_custom',
+  contadores: 'contadores'
+};
+
+async function storeGet(key, fallback){
+  try{
+    if(window.storage && typeof window.storage.get === 'function'){
+      const r = await window.storage.get(key, false);
+      if(r && r.value !== undefined && r.value !== null) return JSON.parse(r.value);
+    }
+  }catch(e){ console.warn('storage API indisponível, usando armazenamento local', e); }
+  try{ const raw=localStorage.getItem('fl_eletrica_'+key); return raw===null?fallback:JSON.parse(raw); }catch(e){ return fallback; }
+}
+async function storeSet(key, value){
+  let ok=false;
+  try{ if(window.storage && typeof window.storage.set === 'function'){ await window.storage.set(key, JSON.stringify(value), false); ok=true; } }catch(e){ console.warn('storage API falhou, usando armazenamento local', e); }
+  try{ localStorage.setItem('fl_eletrica_'+key, JSON.stringify(value)); ok=true; }catch(e){ console.error('localStorage indisponível', e); }
+  return ok;
+}
+
+/* ---------- State ---------- */
+const STATE = {
+  view: 'inicio',
+  clientes: [],
+  orcamentos: [],
+  recibos: [],
+  despesas: [],
+  precosCustom: [],
+  contadores: {orcamento:0, recibo:0},
+  config: {
+    nome:'', cnpj:'', telefone:'', email:'', endereco:'',
+    logo:'', tema:'azul'
+  },
+  ready:false
+};
+
+const THEMES = {
+  azul:   {name:'Elétrico Azul',    primary:[18,41,66],  accent:[245,166,35], uiVar:'#12293f'},
+  escuro: {name:'Industrial Escuro',primary:[24,24,27],  accent:[255,209,60], uiVar:'#18181b'},
+  verde:  {name:'Verde Técnico',    primary:[13,58,47],  accent:[110,209,140],uiVar:'#0d3a2f'}
+};
+
+/* ---------- Utils ---------- */
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+function uid(){ return 'id' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function normalize(str){
+  return (str||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+}
+function money(n){
+  n = Number(n)||0;
+  return n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDateBR(iso){
+  if(!iso) return '—';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function addDays(iso, days){
+  const dt = new Date(iso+'T00:00:00');
+  dt.setDate(dt.getDate()+days);
+  return dt.toISOString().slice(0,10);
+}
+function onlyDigits(s){ return (s||'').toString().replace(/\D/g,''); }
+
+function toast(msg, type=''){
+  const wrap = $('#toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' '+type : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 3200);
+}
+
+function clienteById(id){ return STATE.clientes.find(c=>c.id===id); }
+
+/* ---------- Modal system ---------- */
+function openModal({title, bodyHTML, wide=false, footHTML='', onMount=null}){
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'modalOverlay';
+  overlay.innerHTML = `
+    <div class="modal ${wide?'wide':''}">
+      <div class="modal-head">
+        <h3>${title}</h3>
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">${bodyHTML}</div>
+      ${footHTML ? `<div class="modal-foot">${footHTML}</div>` : ''}
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('mousedown', (e)=>{ if(e.target===overlay) closeModal(); });
+  $('#modalCloseBtn').addEventListener('click', closeModal);
+  if(onMount) onMount(overlay);
+}
+function closeModal(){
+  const el = $('#modalOverlay');
+  if(el) el.remove();
+}
+
+/* ---------- Mobile menu ---------- */
+function toggleMobileMenu(force){
+  const menu=$('#mobileMenu'), fab=$('#mobileFab'); if(!menu||!fab)return;
+  const open=force===undefined?!menu.classList.contains('open'):!!force;
+  menu.classList.toggle('open',open); menu.setAttribute('aria-hidden',String(!open)); fab.setAttribute('aria-expanded',String(open)); fab.textContent=open?'×':'☰';
+}
+
+/* ---------- Init ---------- */
+async function initApp(){
+  const [clientes, orcamentos, recibos, despesas, config, precosCustom, contadores] = await Promise.all([
+    storeGet(KEYS.clientes, []),
+    storeGet(KEYS.orcamentos, []),
+    storeGet(KEYS.recibos, []),
+    storeGet(KEYS.despesas, []),
+    storeGet(KEYS.config, null),
+    storeGet(KEYS.precosCustom, []),
+    storeGet(KEYS.contadores, {orcamento:0, recibo:0}),
+  ]);
+  STATE.clientes = clientes;
+  STATE.orcamentos = orcamentos;
+  STATE.recibos = recibos;
+  STATE.despesas = despesas;
+  STATE.precosCustom = precosCustom;
+  STATE.contadores = contadores;
+  if(config) STATE.config = Object.assign(STATE.config, config);
+  STATE.ready = true;
+  applyThemeVars();
+  render();
+}
+
+function applyThemeVars(){
+  const t = THEMES[STATE.config.tema] || THEMES.azul;
+  document.documentElement.style.setProperty('--navy-800-live', t.uiVar);
+}
+
+/* ---------- Router / nav ---------- */
+const NAV_ITEMS = [
+  {id:'inicio', label:'Início', ic:'⌂'},
+  {id:'clientes', label:'Clientes', ic:'☺'},
+  {id:'orcamentos', label:'Orçamentos', ic:'▤'},
+  {id:'recibos', label:'Recibos', ic:'✓'},
+  {id:'financeiro', label:'Financeiro', ic:'$'},
+  {id:'historico', label:'Histórico', ic:'⏱'},
+  {id:'precos', label:'Consulta de Preços', ic:'฿'},
+  {id:'calculadora', label:'Calculadora Elétrica', ic:'⚡'},
+  {id:'config', label:'Configurações', ic:'⚙'},
+];
+
+function goTo(view){
+  STATE.view = view;
+  render();
+}
+
+function render(){
+  renderSidebar();
+  renderTopbar();
+  const c = $('#content');
+  c.innerHTML = '';
+  const renderers = {
+    inicio: renderInicio,
+    clientes: renderClientes,
+    orcamentos: renderOrcamentos,
+    recibos: renderRecibos,
+    financeiro: renderFinanceiro,
+    historico: renderHistorico,
+    precos: renderPrecos,
+    calculadora: renderCalculadora,
+    config: renderConfig,
+  };
+  (renderers[STATE.view] || renderInicio)(c);
+}
+
+function renderSidebar(){
+  const nav = $('#nav');
+  nav.innerHTML = NAV_ITEMS.map(it => `
+    <button class="nav-item ${STATE.view===it.id?'active':''}" data-nav="${it.id}">
+      <span class="ic">${it.ic}</span>${it.label}
+    </button>`).join('');
+  $$('.nav-item', nav).forEach(b=>b.addEventListener('click', ()=>goTo(b.dataset.nav)));
+  const mn=$('#mobileMenuList');
+  if(mn){
+    mn.innerHTML=NAV_ITEMS.map(it=>`<button class="${STATE.view===it.id?'active':''}" data-mnav="${it.id}"><span class="micon">${it.ic}</span><span class="mtext">${it.label}<small>${(TITLES[it.id]||['',''])[1]}</small></span></button>`).join('');
+    $$('[data-mnav]',mn).forEach(b=>b.addEventListener('click',()=>{goTo(b.dataset.mnav);toggleMobileMenu(false);}));
+  }
+}
+
+const TITLES = {
+  inicio:['Início','Visão geral do seu negócio'],
+  clientes:['Clientes','Cadastro de clientes'],
+  orcamentos:['Orçamentos','Criar, editar e enviar orçamentos'],
+  recibos:['Recibos','Criar, editar e enviar recibos'],
+  financeiro:['Financeiro','Receitas, despesas e serviços por período'],
+  historico:['Histórico','Todos os orçamentos e recibos emitidos'],
+  precos:['Consulta de Preços','Valores mínimo, médio e premium por serviço'],
+  calculadora:['Calculadora Elétrica','Corrente, bitola de fio e disjuntor (NBR 5410)'],
+  config:['Configurações','Dados da empresa, logo e tema dos PDFs'],
+};
+function renderTopbar(){
+  const [t,s] = TITLES[STATE.view] || TITLES.inicio;
+  $('#topbar').innerHTML = `<div><h1>${t}</h1><div class="sub">${s}</div></div>
+    <div class="chip">${STATE.config.nome || 'Empresa não configurada'}</div>`;
+}
+
+/* ============================================================
+   INÍCIO
+============================================================ */
+function renderInicio(root){
+  const orcAbertos = STATE.orcamentos.filter(o=>o.status==='aberto').length;
+  const totalOrc = STATE.orcamentos.reduce((s,o)=>s+(o.total||0),0);
+  const totalRec = STATE.recibos.reduce((s,r)=>s+(r.valor||0),0);
+  root.innerHTML = `
+    <div class="grid grid-4">
+      <div class="stat"><div class="lbl">Clientes</div><div class="val">${STATE.clientes.length}</div><div class="foot">cadastrados</div></div>
+      <div class="stat"><div class="lbl">Orçamentos em aberto</div><div class="val amber">${orcAbertos}</div><div class="foot">${STATE.orcamentos.length} no total</div></div>
+      <div class="stat"><div class="lbl">Total orçado</div><div class="val">${money(totalOrc)}</div><div class="foot">soma de todos os orçamentos</div></div>
+      <div class="stat"><div class="lbl">Total recebido</div><div class="val">${money(totalRec)}</div><div class="foot">soma dos recibos</div></div>
+    </div>
+    <div class="hr"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Ações rápidas</div>
+        <div class="quick-grid" style="display:flex;flex-wrap:wrap;gap:10px;">
+          <button class="btn btn-primary" id="qNovoCliente">+ Novo cliente</button>
+          <button class="btn" id="qNovoOrc">+ Novo orçamento</button>
+          <button class="btn" id="qNovoRec">+ Novo recibo</button>
+          <button class="btn btn-ghost" id="qPrecos">Consultar preço de serviço</button>
+        </div>
+        ${!STATE.config.nome ? `<div class="hr"></div><div class="muted">⚠ Configure os dados da sua empresa e a logo em <b style="color:var(--ink-200)">Configurações</b> para que apareçam nos PDFs.</div>` : ''}
+      </div>
+      <div class="card">
+        <div class="section-title">Últimos lançamentos</div>
+        ${renderMiniHistorico()}
+      </div>
+    </div>`;
+  $('#qNovoCliente').addEventListener('click', ()=>openClienteForm());
+  $('#qNovoOrc').addEventListener('click', ()=>{ goTo('orcamentos'); setTimeout(()=>openOrcamentoForm(),0); });
+  $('#qNovoRec').addEventListener('click', ()=>{ goTo('recibos'); setTimeout(()=>openReciboForm(),0); });
+  $('#qPrecos').addEventListener('click', ()=>goTo('precos'));
+}
+function renderMiniHistorico(){
+  const items = [
+    ...STATE.orcamentos.map(o=>({...o, tipo:'orcamento'})),
+    ...STATE.recibos.map(r=>({...r, tipo:'recibo'}))
+  ].sort((a,b)=> (b.data||'').localeCompare(a.data||'')).slice(0,6);
+  if(!items.length) return `<div class="empty" style="padding:30px 10px;"><div class="ic">▤</div>Nenhum lançamento ainda.</div>`;
+  return `<table><tbody>${items.map(i=>{
+    const cli = clienteById(i.clienteId);
+    return `<tr><td>${i.tipo==='orcamento'?'Orç.':'Rec.'} #${i.numero}</td><td>${cli?cli.nome:'—'}</td><td>${fmtDateBR(i.data)}</td><td style="text-align:right">${money(i.total??i.valor)}</td></tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+/* ============================================================
+   CLIENTES
+============================================================ */
+function renderClientes(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <input id="buscaCliente" placeholder="Buscar cliente por nome, telefone ou endereço..." style="max-width:360px;background:var(--navy-900);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--ink-050);font-size:13.5px;">
+      <button class="btn btn-primary" id="btnNovoCliente">+ Novo cliente</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table id="tblClientes"></table>
+    </div>`;
+  $('#btnNovoCliente').addEventListener('click', ()=>openClienteForm());
+  $('#buscaCliente').addEventListener('input', (e)=>drawClientesTable(e.target.value));
+  drawClientesTable('');
+}
+function drawClientesTable(filtro){
+  const f = normalize(filtro);
+  const list = STATE.clientes.filter(c => !f || normalize(c.nome).includes(f) || normalize(c.telefone).includes(f) || normalize(c.endereco).includes(f));
+  const tbl = $('#tblClientes');
+  if(!list.length){
+    tbl.innerHTML = `<tr><td><div class="empty"><div class="ic">☺</div><b>Nenhum cliente encontrado</b>Cadastre o primeiro cliente para começar a emitir orçamentos.</div></td></tr>`;
+    return;
+  }
+  tbl.innerHTML = `
+    <thead><tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th>Orçamentos</th><th></th></tr></thead>
+    <tbody>${list.map(c=>{
+      const n = STATE.orcamentos.filter(o=>o.clienteId===c.id).length;
+      return `<tr class="row-clickable" data-id="${c.id}">
+        <td><b style="color:var(--ink-050)">${c.nome}</b></td>
+        <td>${c.telefone||'—'}</td>
+        <td>${c.endereco||'—'}</td>
+        <td>${n}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          <button class="btn btn-sm btn-ghost" data-edit="${c.id}">Editar</button>
+          <button class="btn btn-sm btn-danger" data-del="${c.id}">Excluir</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  $$('[data-edit]', tbl).forEach(b=>b.addEventListener('click', (e)=>{e.stopPropagation(); openClienteForm(b.dataset.edit);}));
+  $$('[data-del]', tbl).forEach(b=>b.addEventListener('click', (e)=>{e.stopPropagation(); deleteCliente(b.dataset.del);}));
+  $$('tr[data-id]', tbl).forEach(tr=>tr.addEventListener('click', ()=>openClienteView(tr.dataset.id)));
+}
+function openClienteView(id){
+  const c = clienteById(id);
+  if(!c) return;
+  const orcs = STATE.orcamentos.filter(o=>o.clienteId===id);
+  const recs = STATE.recibos.filter(r=>r.clienteId===id);
+  openModal({
+    title: c.nome,
+    bodyHTML: `
+      <div class="grid grid-2">
+        <div><div class="muted">Telefone</div><div>${c.telefone||'—'}</div></div>
+        <div><div class="muted">Email</div><div>${c.email||'—'}</div></div>
+      </div>
+      <div class="muted" style="margin-top:10px;">Endereço</div><div>${c.endereco||'—'}</div>
+      ${c.obs?`<div class="muted" style="margin-top:10px;">Observações</div><div>${c.obs}</div>`:''}
+      <div class="hr"></div>
+      <div class="section-title">Orçamentos (${orcs.length})</div>
+      ${orcs.length?`<table><tbody>${orcs.map(o=>`<tr><td>#${o.numero}</td><td>${fmtDateBR(o.data)}</td><td>${money(o.total)}</td><td>${statusBadge(o.status)}</td></tr>`).join('')}</tbody></table>`:'<div class="muted">Nenhum orçamento.</div>'}
+      <div class="hr"></div>
+      <div class="section-title">Recibos (${recs.length})</div>
+      ${recs.length?`<table><tbody>${recs.map(r=>`<tr><td>#${r.numero}</td><td>${fmtDateBR(r.data)}</td><td>${money(r.valor)}</td></tr>`).join('')}</tbody></table>`:'<div class="muted">Nenhum recibo.</div>'}
+    `,
+    footHTML: `<button class="btn btn-ghost" id="mClose">Fechar</button><button class="btn btn-primary" id="mEdit">Editar cliente</button>`
+  });
+  $('#mClose').addEventListener('click', closeModal);
+  $('#mEdit').addEventListener('click', ()=>openClienteForm(id));
+}
+function openClienteForm(id){
+  const editing = !!id;
+  const c = editing ? clienteById(id) : {nome:'',telefone:'',email:'',endereco:'',obs:''};
+  openModal({
+    title: editing? 'Editar cliente' : 'Novo cliente',
+    bodyHTML: `
+      <div class="field"><label>Nome completo *</label><input id="fNome" value="${c.nome||''}" placeholder="Ex.: Maria da Silva"></div>
+      <div class="field-row">
+        <div class="field"><label>Telefone (WhatsApp)</label><input id="fTel" value="${c.telefone||''}" placeholder="(71) 99999-9999"></div>
+        <div class="field"><label>Email</label><input id="fEmail" value="${c.email||''}" placeholder="cliente@email.com"></div>
+      </div>
+      <div class="field"><label>Endereço</label><input id="fEnd" value="${c.endereco||''}" placeholder="Rua, número, bairro — Salvador/BA"></div>
+      <div class="field"><label>Observações</label><textarea id="fObs">${c.obs||''}</textarea></div>
+    `,
+    footHTML: `<button class="btn btn-ghost" id="mCancel">Cancelar</button><button class="btn btn-primary" id="mSave">Salvar cliente</button>`
+  });
+  $('#mCancel').addEventListener('click', closeModal);
+  $('#mSave').addEventListener('click', async ()=>{
+    const nome = $('#fNome').value.trim();
+    if(!nome){ toast('Informe o nome do cliente','err'); return; }
+    const data = {
+      id: editing? id : uid(),
+      nome, telefone: $('#fTel').value.trim(), email:$('#fEmail').value.trim(),
+      endereco: $('#fEnd').value.trim(), obs: $('#fObs').value.trim()
+    };
+    if(editing){
+      const idx = STATE.clientes.findIndex(x=>x.id===id);
+      STATE.clientes[idx] = data;
+    } else {
+      STATE.clientes.push(data);
+    }
+    await storeSet(KEYS.clientes, STATE.clientes);
+    closeModal(); toast(editing?'Cliente atualizado':'Cliente cadastrado','ok'); render();
+  });
+}
+async function deleteCliente(id){
+  if(!confirm('Excluir este cliente? Orçamentos e recibos já emitidos serão mantidos.')) return;
+  STATE.clientes = STATE.clientes.filter(c=>c.id!==id);
+  await storeSet(KEYS.clientes, STATE.clientes);
+  toast('Cliente excluído','ok'); render();
+}
+
+/* ============================================================
+   PREÇOS (base + custom)
+============================================================ */
+function allPrecos(){
+  return [...PRECOS_BASE.map(p=>({...p, origem:'tabela'})), ...STATE.precosCustom.map(p=>({...p, origem:'manual'}))];
+}
+function renderPrecos(root){
+  root.innerHTML = `
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="field" style="margin-bottom:10px;">
+            <label>Buscar serviço</label>
+            <input id="buscaPreco" placeholder="Ex.: trocar disjuntor, instalar chuveiro, ponto de tomada...">
+          </div>
+          <div id="listaPrecos"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="section-title">+ Adicionar serviço manual</div>
+          <div class="muted" style="margin-bottom:12px;">Use quando o serviço não estiver na tabela. Ele passa a aparecer nas buscas.</div>
+          <div class="field"><label>Nome do serviço *</label><input id="mpNome" placeholder="Ex.: Instalar carregador veicular"></div>
+          <div class="field"><label>Categoria</label><input id="mpCat" placeholder="Ex.: Serviços especiais"></div>
+          <div class="field-row">
+            <div class="field"><label>Mínimo (R$)</label><input id="mpMin" type="number" min="0" step="1"></div>
+            <div class="field"><label>Médio (R$)</label><input id="mpMed" type="number" min="0" step="1"></div>
+            <div class="field"><label>Premium (R$)</label><input id="mpPre" type="number" min="0" step="1"></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;" id="btnAddPreco">Salvar serviço manual</button>
+        </div>
+        ${STATE.precosCustom.length? `<div class="card" style="margin-top:16px;">
+          <div class="section-title">Serviços manuais cadastrados</div>
+          ${STATE.precosCustom.map(p=>`<div class="price-card"><div><b>${p.servico}</b><div class="meta">${p.categoria||'—'}</div></div>
+            <button class="btn btn-sm btn-danger" data-delmp="${p.id}">Excluir</button></div>`).join('')}
+        </div>`:''}
+      </div>
+    </div>`;
+  $('#buscaPreco').addEventListener('input', (e)=>drawPrecos(e.target.value));
+  $('#btnAddPreco').addEventListener('click', addPrecoManual);
+  $$('[data-delmp]').forEach(b=>b.addEventListener('click', ()=>delPrecoManual(b.dataset.delmp)));
+  drawPrecos('');
+}
+function drawPrecos(filtro){
+  const f = normalize(filtro);
+  let list = allPrecos();
+  if(f) list = list.filter(p=> normalize(p.servico).includes(f) || normalize(p.categoria).includes(f));
+  const box = $('#listaPrecos');
+  if(!list.length){
+    box.innerHTML = `<div class="empty"><div class="ic">฿</div><b>Nenhum serviço encontrado</b>Tente outro termo ou cadastre um valor manual ao lado.</div>`;
+    return;
+  }
+  box.innerHTML = list.slice(0,80).map(p=>`
+    <div class="price-card">
+      <div>
+        <b>${p.servico}</b>
+        <div class="meta">${p.categoria||'—'} ${p.origem==='manual'?'· manual':''}</div>
+      </div>
+      <div class="price-vals">
+        <div class="min"><div class="lbl">Mín.</div><div class="n">${money(p.min)}</div></div>
+        <div class="medio"><div class="lbl">Médio</div><div class="n">${money(p.medio)}</div></div>
+        <div class="premium"><div class="lbl">Premium</div><div class="n">${money(p.premium)}</div></div>
+      </div>
+    </div>`).join('');
+}
+async function addPrecoManual(){
+  const servico = $('#mpNome').value.trim();
+  if(!servico){ toast('Informe o nome do serviço','err'); return; }
+  const item = {
+    id: uid(), servico, categoria: $('#mpCat').value.trim()||'Serviços manuais',
+    min: Number($('#mpMin').value)||0, medio: Number($('#mpMed').value)||0, premium: Number($('#mpPre').value)||0
+  };
+  STATE.precosCustom.push(item);
+  await storeSet(KEYS.precosCustom, STATE.precosCustom);
+  toast('Serviço manual salvo','ok');
+  renderPrecos($('#content'));
+}
+async function delPrecoManual(id){
+  STATE.precosCustom = STATE.precosCustom.filter(p=>p.id!==id);
+  await storeSet(KEYS.precosCustom, STATE.precosCustom);
+  renderPrecos($('#content'));
+}
+
+/* ============================================================
+   ORÇAMENTOS / RECIBOS (compartilham o builder de itens)
+============================================================ */
+function statusBadge(s){
+  const map = {aberto:['badge-amber','Em aberto'], aprovado:['badge-ok','Aprovado'], recusado:['badge-danger','Recusado']};
+  const [cls,label] = map[s] || ['badge-neutral', s||'—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function renderOrcamentos(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="muted">${STATE.orcamentos.length} orçamento(s)</div>
+      <button class="btn btn-primary" id="btnNovoOrc">+ Novo orçamento</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;"><table id="tblOrc"></table></div>`;
+  $('#btnNovoOrc').addEventListener('click', ()=>openOrcamentoForm());
+  drawDocTable('orcamentos');
+}
+function renderRecibos(root){
+  root.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="muted">${STATE.recibos.length} recibo(s)</div>
+      <button class="btn btn-primary" id="btnNovoRec">+ Novo recibo</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;"><table id="tblRec"></table></div>`;
+  $('#btnNovoRec').addEventListener('click', ()=>openReciboForm());
+  drawDocTable('recibos');
+}
+function drawDocTable(kind){
+  const isOrc = kind==='orcamentos';
+  const list = [...STATE[kind]].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const tbl = $(isOrc?'#tblOrc':'#tblRec');
+  if(!list.length){
+    tbl.innerHTML = `<tr><td><div class="empty"><div class="ic">${isOrc?'▤':'✓'}</div><b>Nada por aqui ainda</b>Clique em "+ Novo ${isOrc?'orçamento':'recibo'}" para começar.</div></td></tr>`;
+    return;
+  }
+  tbl.innerHTML = `
+    <thead><tr><th>Nº</th><th>Cliente</th><th>Data</th>${isOrc?'<th>Validade</th><th>Status</th>':'<th>Forma pgto.</th>'}<th style="text-align:right">Total</th><th></th></tr></thead>
+    <tbody>${list.map(d=>{
+      const cli = clienteById(d.clienteId);
+      return `<tr class="row-clickable" data-id="${d.id}">
+        <td>#${d.numero}</td>
+        <td>${cli?cli.nome:'<span class="muted">Cliente removido</span>'}</td>
+        <td>${fmtDateBR(d.data)}</td>
+        ${isOrc?`<td>${fmtDateBR(d.validade)}</td><td>${statusBadge(d.status)}</td>`:`<td>${d.formaPagamento||'—'}</td>`}
+        <td style="text-align:right">${money(isOrc?d.total:d.valor)}</td>
+        <td style="text-align:right;white-space:nowrap;">
+          <button class="btn btn-sm btn-ghost" data-view="${d.id}">Ver</button>
+          <button class="btn btn-sm btn-danger" data-del="${d.id}">Excluir</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  $$('[data-view]', tbl).forEach(b=>b.addEventListener('click', (e)=>{e.stopPropagation(); openDocView(kind, b.dataset.view);}));
+  $$('[data-del]', tbl).forEach(b=>b.addEventListener('click', (e)=>{e.stopPropagation(); deleteDoc(kind, b.dataset.del);}));
+  $$('tr[data-id]', tbl).forEach(tr=>tr.addEventListener('click', ()=>openDocView(kind, tr.dataset.id)));
+}
+async function deleteDoc(kind, id){
+  if(!confirm('Excluir este documento? Esta ação não pode ser desfeita.')) return;
+  STATE[kind] = STATE[kind].filter(d=>d.id!==id);
+  await storeSet(KEYS[kind], STATE[kind]);
+  toast('Excluído','ok');
+  render();
+}
+
+/* ============================================================
+   FINANCEIRO
+============================================================ */
+const finFiltros = {de:'', ate:'', clienteId:''};
+function inPeriodo(dataStr){
+  if(!dataStr) return false;
+  if(finFiltros.de && dataStr < finFiltros.de) return false;
+  if(finFiltros.ate && dataStr > finFiltros.ate) return false;
+  return true;
+}
+function matchClienteFiltro(clienteId){
+  return !finFiltros.clienteId || clienteId===finFiltros.clienteId;
+}
+const CATEGORIAS_DESPESA = ['Material elétrico','Combustível / Deslocamento','Ferramentas e equipamentos','Manutenção de veículo','Impostos e taxas','Alimentação','Outros'];
+
+function renderFinanceiro(root){
+  root.innerHTML = `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="field-row" style="align-items:flex-end;">
+        <div class="field"><label>De</label><input type="date" id="ffDe" value="${finFiltros.de}"></div>
+        <div class="field"><label>Até</label><input type="date" id="ffAte" value="${finFiltros.ate}"></div>
+        <div class="field"><label>Cliente</label><select id="ffCliente"><option value="">Todos</option>${STATE.clientes.map(c=>`<option value="${c.id}" ${finFiltros.clienteId===c.id?'selected':''}>${c.nome}</option>`).join('')}</select></div>
+        <div class="field" style="flex:0;"><label>&nbsp;</label><button class="btn btn-ghost" id="ffLimpar">Limpar filtros</button></div>
+      </div>
+    </div>
+    <div class="grid grid-4" id="finKpis" style="margin-bottom:16px;"></div>
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="section-title" style="margin:0;">Despesas</div>
+            <button class="btn btn-sm btn-primary" id="btnNovaDespesa">+ Nova despesa</button>
+          </div>
+          <div class="hr" style="margin:14px 0;"></div>
+          <table id="tblDespesas"></table>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <div class="section-title">Receitas (recibos recebidos)</div>
+          <table id="tblReceitas"></table>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="section-title">Serviços em aberto</div>
+          <table id="tblAbertos"></table>
+        </div>
+        <div class="card" style="margin-top:16px;">
+          <div class="section-title">Serviços concluídos</div>
+          <table id="tblConcluidos"></table>
+        </div>
+      </div>
+    </div>`;
+  $('#ffDe').addEventListener('change', e=>{ finFiltros.de = e.target.value; drawFinanceiro(); });
+  $('#ffAte').addEventListener('change', e=>{ finFiltros.ate = e.target.value; drawFinanceiro(); });
+  $('#ffCliente').addEventListener('change', e=>{ finFiltros.clienteId = e.target.value; drawFinanceiro(); });
+  $('#ffLimpar').addEventListener('click', ()=>{ finFiltros.de=''; finFiltros.ate=''; finFiltros.clienteId=''; renderFinanceiro(root); });
+  $('#btnNovaDespesa').addEventListener('click', ()=>openDespesaForm());
+  drawFinanceiro();
+}
+
+function drawFinanceiro(){
+  const recFiltradas = STATE.recibos.filter(r=>inPeriodo(r.data) && matchClienteFiltro(r.clienteId));
+  const despFiltradas = STATE.despesas.filter(d=>inPeriodo(d.data));
+  const orcAbertos = STATE.orcamentos.filter(o=>o.status==='aberto' && inPeriodo(o.data) && matchClienteFiltro(o.clienteId));
+  const orcConcluidos = STATE.orcamentos.filter(o=>o.status==='aprovado' && inPeriodo(o.data) && matchClienteFiltro(o.clienteId));
+
+  const totalReceitas = recFiltradas.reduce((s,r)=>s+(r.valor||0),0);
+  const totalDespesas = despFiltradas.reduce((s,d)=>s+(d.valor||0),0);
+  const saldo = totalReceitas - totalDespesas;
+  const totalAberto = orcAbertos.reduce((s,o)=>s+(o.total||0),0);
+
+  $('#finKpis').innerHTML = `
+    <div class="stat"><div class="lbl">Receitas</div><div class="val" style="color:var(--ok-500)">${money(totalReceitas)}</div><div class="foot">${recFiltradas.length} recibo(s)</div></div>
+    <div class="stat"><div class="lbl">Despesas</div><div class="val" style="color:#ff9d97">${money(totalDespesas)}</div><div class="foot">${despFiltradas.length} lançamento(s)</div></div>
+    <div class="stat"><div class="lbl">Saldo do período</div><div class="val ${saldo>=0?'amber':''}" style="${saldo<0?'color:#ff9d97':''}">${money(saldo)}</div><div class="foot">receitas − despesas</div></div>
+    <div class="stat"><div class="lbl">Em aberto (a receber)</div><div class="val">${money(totalAberto)}</div><div class="foot">${orcAbertos.length} orçamento(s)</div></div>
+  `;
+
+  const tblD = $('#tblDespesas');
+  tblD.innerHTML = despFiltradas.length ? `
+    <thead><tr><th>Descrição</th><th>Categoria</th><th>Data</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...despFiltradas].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(d=>`
+      <tr><td>${d.descricao}</td><td>${d.categoria||'—'}</td><td>${fmtDateBR(d.data)}</td>
+      <td style="text-align:right;color:#ff9d97;">- ${money(d.valor)}</td>
+      <td style="text-align:right;white-space:nowrap;"><button class="btn btn-sm btn-ghost" data-editd="${d.id}">Editar</button> <button class="btn btn-sm btn-danger" data-deld="${d.id}">Excluir</button></td></tr>
+    `).join('')}</tbody>` : `<tr><td><div class="empty" style="padding:24px 8px;"><div class="ic">$</div>Nenhuma despesa no período.</div></td></tr>`;
+  $$('[data-editd]', tblD).forEach(b=>b.addEventListener('click', ()=>openDespesaForm(b.dataset.editd)));
+  $$('[data-deld]', tblD).forEach(b=>b.addEventListener('click', ()=>deleteDespesa(b.dataset.deld)));
+
+  const tblR = $('#tblReceitas');
+  tblR.innerHTML = recFiltradas.length ? `
+    <thead><tr><th>Cliente</th><th>Data</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${[...recFiltradas].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(r=>{
+      const c = clienteById(r.clienteId);
+      return `<tr class="row-clickable" data-view="${r.id}"><td>${c?c.nome:'—'}</td><td>${fmtDateBR(r.data)}</td><td style="text-align:right;color:var(--ok-500);">${money(r.valor)}</td></tr>`;
+    }).join('')}</tbody>` : `<tr><td><div class="empty" style="padding:24px 8px;">Nenhuma receita no período.</div></td></tr>`;
+  $$('[data-view]', tblR).forEach(tr=>tr.addEventListener('click', ()=>openDocView('recibos', tr.dataset.view)));
+
+  const tblA = $('#tblAbertos');
+  tblA.innerHTML = orcAbertos.length ? `
+    <thead><tr><th>Cliente</th><th>Data</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${[...orcAbertos].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(o=>{
+      const c = clienteById(o.clienteId);
+      return `<tr class="row-clickable" data-view="${o.id}"><td>${c?c.nome:'—'}</td><td>${fmtDateBR(o.data)}</td><td style="text-align:right;">${money(o.total)}</td></tr>`;
+    }).join('')}</tbody>` : `<tr><td><div class="empty" style="padding:24px 8px;">Nenhum orçamento em aberto no período.</div></td></tr>`;
+  $$('[data-view]', tblA).forEach(tr=>tr.addEventListener('click', ()=>openDocView('orcamentos', tr.dataset.view)));
+
+  const tblC = $('#tblConcluidos');
+  tblC.innerHTML = orcConcluidos.length ? `
+    <thead><tr><th>Cliente</th><th>Data</th><th style="text-align:right">Valor</th></tr></thead>
+    <tbody>${[...orcConcluidos].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(o=>{
+      const c = clienteById(o.clienteId);
+      return `<tr class="row-clickable" data-view="${o.id}"><td>${c?c.nome:'—'}</td><td>${fmtDateBR(o.data)}</td><td style="text-align:right;">${money(o.total)}</td></tr>`;
+    }).join('')}</tbody>` : `<tr><td><div class="empty" style="padding:24px 8px;">Nenhum serviço concluído no período.</div></td></tr>`;
+  $$('[data-view]', tblC).forEach(tr=>tr.addEventListener('click', ()=>openDocView('orcamentos', tr.dataset.view)));
+}
+
+function openDespesaForm(id){
+  const editing = !!id;
+  const d = editing ? STATE.despesas.find(x=>x.id===id) : {descricao:'',categoria:CATEGORIAS_DESPESA[0],valor:'',data:todayISO(),obs:''};
+  openModal({
+    title: editing?'Editar despesa':'Nova despesa',
+    bodyHTML: `
+      <div class="field"><label>Descrição *</label><input id="dDesc" value="${d.descricao||''}" placeholder="Ex.: Compra de fios e disjuntores"></div>
+      <div class="field-row">
+        <div class="field"><label>Categoria</label><select id="dCat">${CATEGORIAS_DESPESA.map(c=>`<option ${d.categoria===c?'selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="field"><label>Valor (R$) *</label><input id="dValor" type="number" min="0" step="0.01" value="${d.valor??''}"></div>
+      </div>
+      <div class="field"><label>Data</label><input id="dData" type="date" value="${d.data}"></div>
+      <div class="field"><label>Observações</label><textarea id="dObs">${d.obs||''}</textarea></div>
+    `,
+    footHTML: `<button class="btn btn-ghost" id="mCancel">Cancelar</button><button class="btn btn-primary" id="mSave">Salvar despesa</button>`
+  });
+  $('#mCancel').addEventListener('click', closeModal);
+  $('#mSave').addEventListener('click', async ()=>{
+    const descricao = $('#dDesc').value.trim();
+    const valor = Number($('#dValor').value);
+    if(!descricao){ toast('Informe a descrição','err'); return; }
+    if(!valor || valor<=0){ toast('Informe um valor válido','err'); return; }
+    const rec = {id: editing?id:uid(), descricao, categoria:$('#dCat').value, valor, data:$('#dData').value, obs:$('#dObs').value.trim()};
+    if(editing){ STATE.despesas[STATE.despesas.findIndex(x=>x.id===id)] = rec; }
+    else{ STATE.despesas.push(rec); }
+    await storeSet(KEYS.despesas, STATE.despesas);
+    closeModal(); toast(editing?'Despesa atualizada':'Despesa registrada','ok');
+    drawFinanceiro();
+  });
+}
+async function deleteDespesa(id){
+  if(!confirm('Excluir esta despesa?')) return;
+  STATE.despesas = STATE.despesas.filter(d=>d.id!==id);
+  await storeSet(KEYS.despesas, STATE.despesas);
+  toast('Despesa excluída','ok');
+  drawFinanceiro();
+}
+
+/* ---------- Item row builder (shared) ---------- */
+let builderItens = [];
+let builderFotos = []; // array de dataURL (base64) das fotos do serviço — só orçamentos
+
+function compressImage(file, maxW=1100, quality=0.72){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('Falha ao ler imagem'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('Falha ao carregar imagem'));
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function fotoThumbHTML(src, idx){
+  return `<div style="position:relative;width:84px;height:84px;flex:0 0 auto;">
+    <img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid var(--line);">
+    <button type="button" class="btn btn-icon btn-danger" data-rmfoto="${idx}" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;font-size:13px;border-radius:50%;">×</button>
+  </div>`;
+}
+function drawFotosBox(){
+  const box = $('#fotosBox');
+  if(!box) return;
+  box.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;">
+    ${builderFotos.map((f,i)=>fotoThumbHTML(f,i)).join('')}
+    <label for="fFotosInput" style="width:84px;height:84px;flex:0 0 auto;border:1.5px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;color:var(--ink-400);font-size:11px;text-align:center;gap:4px;">
+      <span style="font-size:20px;line-height:1;">+</span>Adicionar foto
+    </label>
+  </div>`;
+  $$('[data-rmfoto]', box).forEach(b=>b.addEventListener('click', ()=>{ builderFotos.splice(Number(b.dataset.rmfoto),1); drawFotosBox(); }));
+}
+function itemRowHTML(it, idx){
+  return `<div class="item-row" data-idx="${idx}">
+    <input class="itDesc" placeholder="Descrição do serviço/material" value="${it.desc||''}">
+    <input class="itQtd" type="number" min="0" step="1" placeholder="Qtd" value="${it.qtd??1}">
+    <input class="itVal" type="number" min="0" step="0.01" placeholder="Valor unit." value="${it.valor??''}">
+    <div style="text-align:right;font-weight:600;font-size:13px;" class="itSub">${money((it.qtd||0)*(it.valor||0))}</div>
+    <button class="btn btn-icon btn-danger" data-rmitem="${idx}" title="Remover">×</button>
+  </div>`;
+}
+function drawBuilderItens(){
+  const box = $('#itensBox');
+  if(!box) return;
+  box.innerHTML = builderItens.map((it,i)=>itemRowHTML(it,i)).join('');
+  $$('.item-row', box).forEach(row=>{
+    const idx = Number(row.dataset.idx);
+    row.querySelector('.itDesc').addEventListener('input', e=>{builderItens[idx].desc=e.target.value;});
+    row.querySelector('.itQtd').addEventListener('input', e=>{builderItens[idx].qtd=Number(e.target.value)||0; updateItemSub(row, idx);});
+    row.querySelector('.itVal').addEventListener('input', e=>{builderItens[idx].valor=Number(e.target.value)||0; updateItemSub(row, idx);});
+  });
+  $$('[data-rmitem]', box).forEach(b=>b.addEventListener('click', ()=>{ builderItens.splice(Number(b.dataset.rmitem),1); drawBuilderItens(); updateBuilderTotals(); }));
+  updateBuilderTotals();
+}
+function updateItemSub(row, idx){
+  row.querySelector('.itSub').textContent = money((builderItens[idx].qtd||0)*(builderItens[idx].valor||0));
+  updateBuilderTotals();
+}
+function updateBuilderTotals(){
+  const subtotal = builderItens.reduce((s,it)=>s+(it.qtd||0)*(it.valor||0),0);
+  const desconto = Number($('#fDesconto')?.value)||0;
+  const total = Math.max(subtotal-desconto,0);
+  if($('#lblSubtotal')) $('#lblSubtotal').textContent = money(subtotal);
+  if($('#lblTotal')) $('#lblTotal').textContent = money(total);
+}
+
+function clienteOptions(selectedId){
+  if(!STATE.clientes.length) return `<option value="">Nenhum cliente cadastrado</option>`;
+  return `<option value="">Selecione...</option>` + STATE.clientes.map(c=>`<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.nome}</option>`).join('');
+}
+
+function openOrcamentoForm(id){
+  const editing = !!id;
+  const d = editing ? STATE.orcamentos.find(o=>o.id===id) : {
+    clienteId:'', data:todayISO(), validade:addDays(todayISO(),15), status:'aberto', obs:'', desconto:0
+  };
+  builderItens = editing ? JSON.parse(JSON.stringify(d.itens)) : [{desc:'',qtd:1,valor:''}];
+  openModal({
+    title: editing? `Editar orçamento #${d.numero}` : 'Novo orçamento',
+    wide:true,
+    bodyHTML: `
+      ${!STATE.clientes.length ? `<div class="muted" style="margin-bottom:12px;">Cadastre um cliente antes de criar o orçamento.</div>` : ''}
+      <div class="field-row">
+        <div class="field"><label>Cliente *</label><select id="fCliente">${clienteOptions(d.clienteId)}</select></div>
+        <div class="field"><label>Data</label><input id="fData" type="date" value="${d.data}"></div>
+        <div class="field"><label>Validade</label><input id="fValidade" type="date" value="${d.validade}"></div>
+      </div>
+      <div class="section-title" style="margin-top:6px;">Itens do orçamento</div>
+      <div id="itensBox"></div>
+      <button class="btn btn-sm btn-ghost" id="btnAddItem" style="margin-top:6px;">+ Adicionar item</button>
+      <div class="item-total-bar">
+        <div><span class="lbl">Subtotal</span> <span class="val" id="lblSubtotal">${money(0)}</span></div>
+      </div>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field"><label>Desconto (R$)</label><input id="fDesconto" type="number" min="0" step="0.01" value="${d.desconto||0}"></div>
+        <div class="field"><label>Status</label><select id="fStatus">
+          <option value="aberto" ${d.status==='aberto'?'selected':''}>Em aberto</option>
+          <option value="aprovado" ${d.status==='aprovado'?'selected':''}>Aprovado</option>
+          <option value="recusado" ${d.status==='recusado'?'selected':''}>Recusado</option>
+        </select></div>
+      </div>
+      <div class="item-total-bar" style="border-top:none;padding-top:0;">
+        <div><span class="lbl">TOTAL</span> <span class="val" id="lblTotal" style="color:var(--amber-500);font-size:17px;">${money(0)}</span></div>
+      </div>
+      <div class="field"><label>Observações / condições</label><textarea id="fObs">${d.obs||''}</textarea></div>
+      <div class="section-title" style="margin-top:6px;">Fotos do serviço</div>
+      <div class="field-hint" style="margin-bottom:8px;">Anexe fotos do local, do problema ou do serviço a orçar. Elas são incluídas no PDF.</div>
+      <input type="file" id="fFotosInput" accept="image/*" multiple style="display:none;">
+      <div id="fotosBox"></div>
+    `,
+    footHTML: `<button class="btn btn-ghost" id="mCancel">Cancelar</button><button class="btn btn-primary" id="mSave">Salvar orçamento</button>`,
+    onMount: ()=>{
+      drawBuilderItens();
+      builderFotos = editing ? (d.fotos||[]).slice() : [];
+      drawFotosBox();
+      $('#btnAddItem').addEventListener('click', ()=>{ builderItens.push({desc:'',qtd:1,valor:''}); drawBuilderItens(); });
+      $('#fDesconto').addEventListener('input', updateBuilderTotals);
+      $('#fFotosInput').addEventListener('change', async (e)=>{
+        const files = Array.from(e.target.files||[]);
+        if(!files.length) return;
+        toast('Processando foto(s)...');
+        for(const file of files){
+          try{ builderFotos.push(await compressImage(file)); }
+          catch(err){ toast('Não foi possível carregar uma das fotos','err'); }
+        }
+        e.target.value = '';
+        drawFotosBox();
+      });
+    }
+  });
+  $('#mCancel').addEventListener('click', closeModal);
+  $('#mSave').addEventListener('click', async ()=>{
+    const clienteId = $('#fCliente').value;
+    if(!clienteId){ toast('Selecione um cliente','err'); return; }
+    const itens = builderItens.filter(it=>it.desc && it.desc.trim());
+    if(!itens.length){ toast('Adicione pelo menos um item','err'); return; }
+    const subtotal = itens.reduce((s,it)=>s+(it.qtd||0)*(it.valor||0),0);
+    const desconto = Number($('#fDesconto').value)||0;
+    const total = Math.max(subtotal-desconto,0);
+    let numero = editing ? d.numero : (STATE.contadores.orcamento = (STATE.contadores.orcamento||0)+1);
+    const rec = {
+      id: editing? id: uid(), numero,
+      clienteId, data: $('#fData').value, validade: $('#fValidade').value,
+      itens, subtotal, desconto, total, status: $('#fStatus').value, obs: $('#fObs').value.trim(),
+      fotos: builderFotos.slice()
+    };
+    if(editing){
+      const idx = STATE.orcamentos.findIndex(x=>x.id===id);
+      STATE.orcamentos[idx] = rec;
+    } else {
+      STATE.orcamentos.push(rec);
+    }
+    await storeSet(KEYS.orcamentos, STATE.orcamentos);
+    await storeSet(KEYS.contadores, STATE.contadores);
+    closeModal(); toast(editing?'Orçamento atualizado':'Orçamento criado','ok'); render();
+    openDocView('orcamentos', rec.id);
+  });
+}
+
+function openReciboForm(id){
+  const editing = !!id;
+  const d = editing ? STATE.recibos.find(r=>r.id===id) : {
+    clienteId:'', data:todayISO(), formaPagamento:'Pix', referenteOrc:'', obs:'', desconto:0
+  };
+  builderItens = editing ? JSON.parse(JSON.stringify(d.itens)) : [{desc:'',qtd:1,valor:''}];
+  const orcsCliente = () => STATE.orcamentos.filter(o=>o.clienteId===$('#fCliente')?.value);
+  openModal({
+    title: editing? `Editar recibo #${d.numero}` : 'Novo recibo',
+    wide:true,
+    bodyHTML: `
+      <div class="field-row">
+        <div class="field"><label>Cliente *</label><select id="fCliente">${clienteOptions(d.clienteId)}</select></div>
+        <div class="field"><label>Data</label><input id="fData" type="date" value="${d.data}"></div>
+        <div class="field"><label>Forma de pagamento</label><select id="fForma">
+          ${['Pix','Dinheiro','Cartão de débito','Cartão de crédito','Transferência','Boleto'].map(f=>`<option ${d.formaPagamento===f?'selected':''}>${f}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="section-title" style="margin-top:6px;">Itens / referente a</div>
+      <div id="itensBox"></div>
+      <button class="btn btn-sm btn-ghost" id="btnAddItem" style="margin-top:6px;">+ Adicionar item</button>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field"><label>Desconto (R$)</label><input id="fDesconto" type="number" min="0" step="0.01" value="${d.desconto||0}"></div>
+      </div>
+      <div class="item-total-bar" style="border-top:none;padding-top:0;">
+        <div><span class="lbl">TOTAL RECEBIDO</span> <span class="val" id="lblTotal" style="color:var(--amber-500);font-size:17px;">${money(0)}</span></div>
+      </div>
+      <div class="field"><label>Observações</label><textarea id="fObs">${d.obs||''}</textarea></div>
+    `,
+    footHTML: `<button class="btn btn-ghost" id="mCancel">Cancelar</button><button class="btn btn-primary" id="mSave">Salvar recibo</button>`,
+    onMount: ()=>{
+      drawBuilderItens();
+      $('#btnAddItem').addEventListener('click', ()=>{ builderItens.push({desc:'',qtd:1,valor:''}); drawBuilderItens(); });
+      $('#fDesconto').addEventListener('input', updateBuilderTotals);
+    }
+  });
+  $('#mCancel').addEventListener('click', closeModal);
+  $('#mSave').addEventListener('click', async ()=>{
+    const clienteId = $('#fCliente').value;
+    if(!clienteId){ toast('Selecione um cliente','err'); return; }
+    const itens = builderItens.filter(it=>it.desc && it.desc.trim());
+    if(!itens.length){ toast('Adicione pelo menos um item','err'); return; }
+    const subtotal = itens.reduce((s,it)=>s+(it.qtd||0)*(it.valor||0),0);
+    const desconto = Number($('#fDesconto').value)||0;
+    const valor = Math.max(subtotal-desconto,0);
+    let numero = editing ? d.numero : (STATE.contadores.recibo = (STATE.contadores.recibo||0)+1);
+    const rec = {
+      id: editing? id: uid(), numero,
+      clienteId, data: $('#fData').value, formaPagamento: $('#fForma').value,
+      itens, subtotal, desconto, valor, obs: $('#fObs').value.trim()
+    };
+    if(editing){
+      const idx = STATE.recibos.findIndex(x=>x.id===id);
+      STATE.recibos[idx] = rec;
+    } else {
+      STATE.recibos.push(rec);
+    }
+    await storeSet(KEYS.recibos, STATE.recibos);
+    await storeSet(KEYS.contadores, STATE.contadores);
+    closeModal(); toast(editing?'Recibo atualizado':'Recibo criado','ok'); render();
+    openDocView('recibos', rec.id);
+  });
+}
+
+function openDocView(kind, id){
+  const isOrc = kind==='orcamentos';
+  const d = STATE[kind].find(x=>x.id===id);
+  if(!d) return;
+  const cli = clienteById(d.clienteId);
+  openModal({
+    title: `${isOrc?'Orçamento':'Recibo'} #${d.numero}`,
+    wide:true,
+    bodyHTML: `
+      <div class="grid grid-2">
+        <div><div class="muted">Cliente</div><div><b>${cli?cli.nome:'Cliente removido'}</b></div><div class="muted">${cli?.telefone||''}</div></div>
+        <div><div class="muted">Data</div><div>${fmtDateBR(d.data)}</div>
+          ${isOrc?`<div class="muted" style="margin-top:6px;">Validade</div><div>${fmtDateBR(d.validade)}</div>`:`<div class="muted" style="margin-top:6px;">Forma de pagamento</div><div>${d.formaPagamento}</div>`}
+        </div>
+      </div>
+      <div class="hr"></div>
+      <table><thead><tr><th>Descrição</th><th>Qtd</th><th>Valor unit.</th><th style="text-align:right">Subtotal</th></tr></thead>
+      <tbody>${d.itens.map(it=>`<tr><td>${it.desc}</td><td>${it.qtd}</td><td>${money(it.valor)}</td><td style="text-align:right">${money((it.qtd||0)*(it.valor||0))}</td></tr>`).join('')}</tbody></table>
+      <div class="item-total-bar"><div><span class="lbl">Subtotal</span> <span class="val">${money(d.subtotal)}</span></div></div>
+      ${d.desconto?`<div class="item-total-bar" style="border-top:none;padding-top:0;"><div><span class="lbl">Desconto</span> <span class="val">- ${money(d.desconto)}</span></div></div>`:''}
+      <div class="item-total-bar" style="border-top:none;padding-top:0;"><div><span class="lbl">TOTAL</span> <span class="val" style="color:var(--amber-500);font-size:17px;">${money(isOrc?d.total:d.valor)}</span></div></div>
+      ${isOrc?`<div style="margin-top:6px;">${statusBadge(d.status)}</div>`:''}
+      ${d.obs?`<div class="hr"></div><div class="muted">Observações</div><div>${d.obs}</div>`:''}
+      ${(d.fotos&&d.fotos.length)?`<div class="hr"></div><div class="muted" style="margin-bottom:8px;">Fotos do serviço (${d.fotos.length})</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">${d.fotos.map(f=>`<img src="${f}" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line);">`).join('')}</div>`:''}
+    `,
+    footHTML: `
+      <button class="btn btn-ghost" id="mEdit">Editar</button>
+      <button class="btn" id="mPdf">Baixar PDF</button>
+      <button class="btn btn-primary" id="mWpp">Enviar via WhatsApp</button>
+    `
+  });
+  $('#mEdit').addEventListener('click', ()=>{ closeModal(); isOrc? openOrcamentoForm(id) : openReciboForm(id); });
+  $('#mPdf').addEventListener('click', ()=>gerarPDF(kind, d));
+  $('#mWpp').addEventListener('click', ()=>enviarWhatsApp(kind, d));
+}
+
+/* ============================================================
+   HISTÓRICO
+============================================================ */
+function renderHistorico(root){
+  root.innerHTML = `
+    <div class="field-row" style="margin-bottom:12px;">
+      <div class="field"><label>Tipo</label><select id="hfTipo"><option value="">Todos</option><option value="orcamento">Orçamentos</option><option value="recibo">Recibos</option></select></div>
+      <div class="field"><label>Cliente</label><select id="hfCliente"><option value="">Todos</option>${STATE.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('')}</select></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;"><table id="tblHist"></table></div>`;
+  $('#hfTipo').addEventListener('change', drawHistorico);
+  $('#hfCliente').addEventListener('change', drawHistorico);
+  drawHistorico();
+}
+function drawHistorico(){
+  const tipo = $('#hfTipo')?.value || '';
+  const cli = $('#hfCliente')?.value || '';
+  let items = [
+    ...STATE.orcamentos.map(o=>({...o, tipo:'orcamento', total:o.total})),
+    ...STATE.recibos.map(r=>({...r, tipo:'recibo', total:r.valor}))
+  ];
+  if(tipo) items = items.filter(i=>i.tipo===tipo);
+  if(cli) items = items.filter(i=>i.clienteId===cli);
+  items.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const tbl = $('#tblHist');
+  if(!items.length){ tbl.innerHTML = `<tr><td><div class="empty"><div class="ic">⏱</div><b>Nada encontrado</b>Ajuste os filtros ou emita seu primeiro documento.</div></td></tr>`; return; }
+  tbl.innerHTML = `
+    <thead><tr><th>Tipo</th><th>Nº</th><th>Cliente</th><th>Data</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${items.map(i=>{
+      const c = clienteById(i.clienteId);
+      return `<tr class="row-clickable" data-kind="${i.tipo==='orcamento'?'orcamentos':'recibos'}" data-id="${i.id}">
+        <td>${i.tipo==='orcamento'?'<span class="badge badge-neutral">Orçamento</span>':'<span class="badge badge-ok">Recibo</span>'}</td>
+        <td>#${i.numero}</td><td>${c?c.nome:'—'}</td><td>${fmtDateBR(i.data)}</td>
+        <td style="text-align:right">${money(i.total)}</td>
+        <td style="text-align:right"><button class="btn btn-sm btn-ghost">Ver</button></td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  $$('tr[data-id]', tbl).forEach(tr=>tr.addEventListener('click', ()=>openDocView(tr.dataset.kind, tr.dataset.id)));
+}
+
+/* ============================================================
+   CALCULADORA ELÉTRICA (Lei de Ohm + referência NBR 5410)
+============================================================ */
+// Ampacidade simplificada — método B1, condutor de cobre, isolação PVC 70°C,
+// 2 condutores carregados (referência de projeto; validar situação real com NBR 5410 completa).
+const TABELA_FIOS = [
+  {mm:1.5, amp:15.5}, {mm:2.5, amp:21}, {mm:4, amp:28}, {mm:6, amp:36},
+  {mm:10, amp:50}, {mm:16, amp:68}, {mm:25, amp:89}, {mm:35, amp:110},
+  {mm:50, amp:134}, {mm:70, amp:171}
+];
+const DISJUNTORES_PADRAO = [10,16,20,25,32,40,50,63,70,80,100];
+
+function calcularCircuito(potencia, tensao, tipoCircuito, fp){
+  let mult = 1;
+  if(tipoCircuito==='trifasico') mult = Math.sqrt(3);
+  const corrente = potencia / (tensao * mult * fp);
+  // escolhe disjuntor padrão >= corrente
+  let disjuntor = DISJUNTORES_PADRAO.find(d=>d>=corrente) || DISJUNTORES_PADRAO[DISJUNTORES_PADRAO.length-1];
+  // escolhe fio cuja ampacidade >= corrente e >= disjuntor escolhido
+  let fio = TABELA_FIOS.find(f=>f.amp>=Math.max(corrente,disjuntor));
+  if(!fio) fio = TABELA_FIOS[TABELA_FIOS.length-1];
+  return {corrente, disjuntor, fio};
+}
+
+function renderCalculadora(root){
+  root.innerHTML = `
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Dados do equipamento / circuito</div>
+        <div class="field"><label>Potência (W) *</label><input id="cPot" type="number" min="0" step="1" placeholder="Ex.: 5500 (chuveiro elétrico)"></div>
+        <div class="field-row">
+          <div class="field"><label>Tensão (V)</label><select id="cTensao">
+            <option value="127">127V</option><option value="220" selected>220V</option><option value="380">380V</option>
+          </select></div>
+          <div class="field"><label>Tipo de circuito</label><select id="cTipo">
+            <option value="monofasico" selected>Monofásico</option><option value="trifasico">Trifásico</option>
+          </select></div>
+        </div>
+        <div class="field"><label>Fator de potência</label><input id="cFp" type="number" min="0.1" max="1" step="0.01" value="1"><span class="field-hint">Use ~0,8 para motores; 1 para resistivos (chuveiro, aquecedor).</span></div>
+        <button class="btn btn-primary" id="btnCalc" style="width:100%;justify-content:center;">Calcular</button>
+        <div id="calcOut"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Como funciona</div>
+        <div class="muted">
+          Corrente pela Lei de Ohm: <b style="color:var(--ink-200)">I = P / (V × FP)</b> — para circuitos trifásicos, <b style="color:var(--ink-200)">I = P / (V × √3 × FP)</b>.<br><br>
+          A bitola do condutor e o disjuntor sugeridos usam uma tabela simplificada de referência (condutor de cobre, isolação PVC, método de instalação B1, dois condutores carregados), baseada na lógica da NBR 5410.<br><br>
+          <b style="color:var(--amber-400)">Atenção:</b> este cálculo é uma referência de bolso. Fatores de agrupamento de circuitos, temperatura ambiente, comprimento do trecho (queda de tensão) e o método de instalação real podem exigir bitola maior. Para projetos e ligações definitivas, confira a NBR 5410 completa ou valide com um engenheiro eletricista.
+        </div>
+      </div>
+    </div>`;
+  $('#btnCalc').addEventListener('click', ()=>{
+    const potencia = Number($('#cPot').value);
+    const tensao = Number($('#cTensao').value);
+    const tipo = $('#cTipo').value;
+    const fp = Number($('#cFp').value)||1;
+    if(!potencia || potencia<=0){ toast('Informe a potência em watts','err'); return; }
+    const r = calcularCircuito(potencia, tensao, tipo, fp);
+    $('#calcOut').innerHTML = `
+      <div class="calc-result">
+        <div class="stat"><div class="lbl">Corrente</div><div class="val amber">${r.corrente.toFixed(2)} A</div></div>
+        <div class="stat"><div class="lbl">Bitola do fio</div><div class="val">${r.fio.mm} mm²</div><div class="foot">ampacidade ${r.fio.amp} A</div></div>
+        <div class="stat"><div class="lbl">Disjuntor</div><div class="val">${r.disjuntor} A</div><div class="foot">padrão comercial</div></div>
+      </div>`;
+  });
+}
+
+/* ============================================================
+   CONFIGURAÇÕES
+============================================================ */
+function renderConfig(root){
+  const cfg = STATE.config;
+  root.innerHTML = `
+    <div class="two-col">
+      <div class="card">
+        <div class="section-title">Dados da empresa</div>
+        <div class="field"><label>Nome da empresa / eletricista *</label><input id="gNome" value="${cfg.nome||''}" placeholder="Ex.: FL Elétrica"></div>
+        <div class="field-row">
+          <div class="field"><label>CNPJ / CPF</label><input id="gCnpj" value="${cfg.cnpj||''}"></div>
+          <div class="field"><label>Telefone</label><input id="gTel" value="${cfg.telefone||''}" placeholder="(71) 90000-0000"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Email</label><input id="gEmail" value="${cfg.email||''}"></div>
+          <div class="field"><label>Endereço</label><input id="gEnd" value="${cfg.endereco||''}"></div>
+        </div>
+        <div class="field">
+          <label>Logo da empresa</label>
+          <div style="display:flex;align-items:center;gap:14px;">
+            ${cfg.logo? `<img src="${cfg.logo}" class="logo-preview" id="logoPreview">` : `<div class="logo-preview" style="display:flex;align-items:center;justify-content:center;color:#999;font-size:10px;">sem logo</div>`}
+            <div>
+              <input type="file" id="gLogo" accept="image/*" style="font-size:12px;">
+              <div class="field-hint">PNG ou JPG, fundo transparente ou branco.</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnSaveConfig" style="width:100%;justify-content:center;margin-top:6px;">Salvar configurações</button>
+      </div>
+      <div class="card">
+        <div class="section-title">Tema visual dos PDFs</div>
+        <div class="theme-pick" id="themePick">
+          ${Object.entries(THEMES).map(([key,t])=>`
+            <div class="theme-opt ${cfg.tema===key?'selected':''}" data-theme="${key}">
+              <div class="theme-swatch" style="background:linear-gradient(120deg, rgb(${t.primary.join(',')}), rgb(${t.accent.join(',')}));"></div>
+              <b>${t.name}</b>
+            </div>`).join('')}
+        </div>
+        <div class="hr"></div>
+        <div class="muted">O tema escolhido define as cores do cabeçalho e destaques nos PDFs de orçamento e recibo.</div>
+      </div>
+    </div>`;
+  let logoData = cfg.logo || '';
+  let temaSel = cfg.tema || 'azul';
+  $('#gLogo').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ logoData = reader.result; toast('Logo carregada — clique em Salvar','ok'); };
+    reader.readAsDataURL(file);
+  });
+  $$('.theme-opt', $('#themePick')).forEach(el=>el.addEventListener('click', ()=>{
+    temaSel = el.dataset.theme;
+    $$('.theme-opt', $('#themePick')).forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+  }));
+  $('#btnSaveConfig').addEventListener('click', async ()=>{
+    STATE.config = {
+      nome: $('#gNome').value.trim(), cnpj: $('#gCnpj').value.trim(), telefone: $('#gTel').value.trim(),
+      email: $('#gEmail').value.trim(), endereco: $('#gEnd').value.trim(), logo: logoData, tema: temaSel
+    };
+    await storeSet(KEYS.config, STATE.config);
+    applyThemeVars();
+    toast('Configurações salvas','ok');
+    render();
+  });
+}
+
+/* ============================================================
+   GERAÇÃO DE PDF (jsPDF)
+============================================================ */
+function gerarPDF(kind, d){
+  if(!window.jspdf){ toast('Biblioteca de PDF ainda carregando, tente novamente em instantes','err'); return; }
+  const isOrc = kind==='orcamentos';
+  const cli = clienteById(d.clienteId);
+  const theme = THEMES[STATE.config.tema] || THEMES.azul;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 14;
+
+  // Header
+  doc.setFillColor(...theme.primary);
+  doc.rect(0,0,pageW,32,'F');
+  if(STATE.config.logo){
+    try{ doc.addImage(STATE.config.logo, undefined, margin, 6, 20, 20, undefined, 'FAST'); }catch(e){}
+  }
+  const textX = STATE.config.logo ? margin+26 : margin;
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(14);
+  doc.text(STATE.config.nome || 'Orçamento FL Elétrica', textX, 14);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  const infoLine = [STATE.config.telefone, STATE.config.email, STATE.config.endereco].filter(Boolean).join('  ·  ');
+  doc.text(infoLine || 'Serviços elétricos', textX, 20);
+  if(STATE.config.cnpj) doc.text('CNPJ/CPF: '+STATE.config.cnpj, textX, 25);
+
+  // Doc type badge
+  doc.setFillColor(...theme.accent);
+  doc.roundedRect(pageW-margin-52, 8, 52, 16, 2, 2, 'F');
+  doc.setTextColor(30,20,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text((isOrc?'ORÇAMENTO':'RECIBO')+' Nº '+String(d.numero).padStart(4,'0'), pageW-margin-26, 15, {align:'center'});
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('Data: '+fmtDateBR(d.data), pageW-margin-26, 20.5, {align:'center'});
+
+  let y = 42;
+  doc.setTextColor(30,30,30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('CLIENTE', margin, y);
+  doc.setDrawColor(...theme.accent); doc.setLineWidth(0.6); doc.line(margin, y+1.5, margin+18, y+1.5);
+  y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text(cli?cli.nome:'Cliente não informado', margin, y); y+=5;
+  if(cli?.telefone){ doc.text('Telefone: '+cli.telefone, margin, y); y+=5; }
+  if(cli?.endereco){ doc.text('Endereço: '+cli.endereco, margin, y); y+=5; }
+  if(!isOrc){ doc.text('Forma de pagamento: '+(d.formaPagamento||'—'), margin, y); y+=5; }
+  if(isOrc){ doc.text('Validade da proposta: '+fmtDateBR(d.validade), margin, y); y+=5; }
+
+  y+=4;
+  // Table header
+  const colX = [margin, margin+95, margin+120, margin+150];
+  const colW = [95,25,30,30];
+  function tableHeader(yy){
+    doc.setFillColor(...theme.primary);
+    doc.rect(margin, yy, pageW-margin*2, 8, 'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('DESCRIÇÃO', colX[0]+2, yy+5.5);
+    doc.text('QTD', colX[1]+2, yy+5.5);
+    doc.text('VALOR UNIT.', colX[2]+2, yy+5.5);
+    doc.text('SUBTOTAL', colX[3]+2, yy+5.5);
+    return yy+8;
+  }
+  y = tableHeader(y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(30,30,30);
+  d.itens.forEach((it,i)=>{
+    const lines = doc.splitTextToSize(it.desc||'', colW[0]-4);
+    const rowH = Math.max(7, lines.length*4.2+2);
+    if(y+rowH > pageH-40){ doc.addPage(); y=16; y=tableHeader(y); }
+    if(i%2===1){ doc.setFillColor(245,247,250); doc.rect(margin,y,pageW-margin*2,rowH,'F'); }
+    doc.setTextColor(30,30,30);
+    doc.text(lines, colX[0]+2, y+5);
+    doc.text(String(it.qtd), colX[1]+2, y+5);
+    doc.text(money(it.valor), colX[2]+2, y+5);
+    doc.text(money((it.qtd||0)*(it.valor||0)), colX[3]+2, y+5);
+    y+=rowH;
+    doc.setDrawColor(225,229,234); doc.setLineWidth(0.2); doc.line(margin,y,pageW-margin,y);
+  });
+
+  y+=8;
+  if(y>pageH-50){ doc.addPage(); y=20; }
+  const totalsX = pageW-margin-70;
+  doc.setFontSize(10); doc.setTextColor(80,80,80); doc.setFont('helvetica','normal');
+  doc.text('Subtotal:', totalsX, y); doc.text(money(d.subtotal), pageW-margin, y, {align:'right'}); y+=6;
+  if(d.desconto){ doc.text('Desconto:', totalsX, y); doc.text('- '+money(d.desconto), pageW-margin, y, {align:'right'}); y+=6; }
+  doc.setFillColor(...theme.accent);
+  doc.roundedRect(totalsX-4, y-5, pageW-margin-totalsX+4, 10, 2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(30,20,0);
+  doc.text(isOrc? 'TOTAL:' : 'TOTAL RECEBIDO:', totalsX, y+2);
+  doc.text(money(isOrc?d.total:d.valor), pageW-margin, y+2, {align:'right'});
+  y+=16;
+
+  if(d.obs){
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+    doc.text('OBSERVAÇÕES', margin, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    const obsLines = doc.splitTextToSize(d.obs, pageW-margin*2);
+    doc.text(obsLines, margin, y); y += obsLines.length*4.2 + 4;
+  }
+
+  if(d.fotos && d.fotos.length){
+    if(y>pageH-70){ doc.addPage(); y=20; }
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+    doc.text('FOTOS DO SERVIÇO', margin, y); y+=6;
+    const gap=6, cols=2, cellW=(pageW-margin*2-gap)/cols, cellH=62;
+    d.fotos.forEach((foto,i)=>{
+      const col = i%cols;
+      if(col===0 && i>0) y+=cellH+gap;
+      if(y+cellH > pageH-16){ doc.addPage(); y=20;
+        doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+        doc.text('FOTOS DO SERVIÇO (continuação)', margin, y); y+=6;
+      }
+      const x = margin + col*(cellW+gap);
+      try{
+        doc.setDrawColor(220,220,220); doc.setLineWidth(0.2);
+        doc.rect(x, y, cellW, cellH);
+        doc.addImage(foto, undefined, x+1, y+1, cellW-2, cellH-2, undefined, 'FAST');
+      }catch(e){}
+    });
+    y += cellH + 10;
+  }
+
+  // Footer
+  doc.setFontSize(8); doc.setTextColor(140,140,140);
+  doc.text('Documento gerado por Orçamento FL Elétrica', margin, pageH-10);
+  doc.text(fmtDateBR(todayISO()), pageW-margin, pageH-10, {align:'right'});
+
+  const fname = `${isOrc?'orcamento':'recibo'}_${d.numero}_${(cli?.nome||'cliente').replace(/\s+/g,'_')}.pdf`;
+  doc.save(fname);
+  toast('PDF baixado','ok');
+}
+
+/* ---------- WhatsApp ---------- */
+function enviarWhatsApp(kind, d){
+  const isOrc = kind==='orcamentos';
+  const cli = clienteById(d.clienteId);
+  if(!cli || !cli.telefone){
+    toast('Cadastre o telefone do cliente para enviar por WhatsApp','err');
+    return;
+  }
+  let digits = onlyDigits(cli.telefone);
+  if(digits.length<=11) digits = '55'+digits; // adiciona DDI Brasil se ausente
+  const total = isOrc ? d.total : d.valor;
+  const msg = `Olá ${cli.nome}! Segue o seu ${isOrc?'orçamento':'recibo'} nº ${d.numero} da ${STATE.config.nome||'nossa empresa'}, no valor de ${money(total)}.\n\n` +
+    `${isOrc? 'Validade da proposta: '+fmtDateBR(d.validade)+'.\n\n' : ''}` +
+    `Baixe o PDF gerado no app e anexe aqui nesta conversa. Qualquer dúvida, estou à disposição!`;
+  const url = `https://wa.me/${digits}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+  gerarPDF(kind, d);
+}
+
+/* ---------- boot ---------- */
+window.addEventListener('DOMContentLoaded', ()=>{
+  const fab=$('#mobileFab');
+  if(fab) fab.addEventListener('click',()=>toggleMobileMenu());
+  document.addEventListener('click',e=>{const menu=$('#mobileMenu'); if(menu&&menu.classList.contains('open')&&!menu.contains(e.target)&&e.target!==fab) toggleMobileMenu(false);});
+  initApp();
+  if('serviceWorker' in navigator && location.protocol!=='file:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
+});
+
+</script>
+
+<script>
+/* ===== MOBILE 2.0 ENHANCEMENTS ===== */
+(function(){
+  const mobileItems = [
+    ['inicio','🏠','Início'],
+    ['clientes','👥','Clientes'],
+    ['agenda','📅','Agenda'],
+    ['servicos','🔧','Serviços'],
+    ['orcamentos','🧾','Orçamentos'],
+    ['ordens','📋','Ordens de Serviço'],
+    ['financeiro','💰','Financeiro'],
+    ['fotos','📸','Fotos / Serviços'],
+    ['relatorios','📊','Relatórios'],
+    ['precos','💵','Tabela de Preços'],
+    ['config','⚙️','Configurações']
+  ];
+
+  function getState(){
+    try{return STATE}catch(e){return null}
+  }
+  function uid2(){ return 'm2_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8); }
+  function money2(v){ return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  function today2(){ return new Date().toISOString().slice(0,10); }
+  function load2(key, fallback){
+    try{return JSON.parse(localStorage.getItem('fl2_'+key)||'null') ?? fallback}catch(e){return fallback}
+  }
+  function save2(key,val){try{localStorage.setItem('fl2_'+key,JSON.stringify(val))}catch(e){}}
+
+  function ensureData(){
+    const s=getState(); if(!s) return;
+    s.agenda = s.agenda || load2('agenda',[]);
+    s.servicos = s.servicos || load2('servicos',[]);
+    s.ordens = s.ordens || load2('ordens',[]);
+    s.relatorios = s.relatorios || {};
+    save2('agenda',s.agenda); save2('servicos',s.servicos); save2('ordens',s.ordens);
+  }
+
+  function mountMobile(){
+    if(document.getElementById('m2fab')) return;
+    const b=document.createElement('button');
+    b.id='m2fab'; b.className='mobile-fab'; b.innerHTML='☰'; b.setAttribute('aria-label','Abrir menu');
+    const backdrop=document.createElement('div'); backdrop.className='mobile-menu-backdrop'; backdrop.id='m2back';
+    const menu=document.createElement('div'); menu.className='mobile-menu'; menu.id='m2menu';
+    menu.innerHTML='<h3>FL Elétrica • Menu</h3>'+mobileItems.map(x=>`<button data-m2nav="${x[0]}"><span class="mi">${x[1]}</span><span>${x[2]}</span></button>`).join('');
+    document.body.append(backdrop,menu,b);
+    function toggle(){
+      const open=menu.style.display==='block';
+      menu.style.display=open?'none':'block'; backdrop.style.display=open?'none':'block'; b.classList.toggle('open',!open);
+    }
+    b.onclick=toggle; backdrop.onclick=toggle;
+    menu.querySelectorAll('[data-m2nav]').forEach(el=>el.onclick=()=>{
+      const v=el.dataset.m2nav;
+      menu.style.display='none'; backdrop.style.display='none'; b.classList.remove('open');
+      if(v==='agenda'||v==='servicos'||v==='ordens'||v==='fotos'||v==='relatorios') renderM2(v);
+      else if(typeof goTo==='function') goTo(v);
+    });
+  }
+
+  function m2Root(title, subtitle=''){
+    const c=document.getElementById('content');
+    c.innerHTML=`<div class="card"><div class="section-title">${title}</div>${subtitle?`<div class="muted">${subtitle}</div>`:''}<div id="m2body"></div></div>`;
+    return document.getElementById('m2body');
+  }
+
+  function clientOptions(){
+    const s=getState(); return (s?.clientes||[]).map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  }
+  function clientName(id){
+    const s=getState(); return (s?.clientes||[]).find(c=>c.id===id)?.nome || 'Cliente não informado';
+  }
+
+  function renderM2(view){
+    ensureData();
+    const s=getState(); if(!s) return;
+    s.view=view;
+    if(typeof renderTopbar==='function') renderTopbar();
+    if(view==='agenda') renderAgenda();
+    if(view==='servicos') renderServicos();
+    if(view==='ordens') renderOrdens();
+    if(view==='fotos') renderFotos();
+    if(view==='relatorios') renderRelatorios();
+  }
+
+  function renderAgenda(){
+    const b=m2Root('📅 Agenda','Organize visitas e serviços do dia.');
+    const s=getState(), list=(s.agenda||[]).slice().sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora));
+    b.innerHTML=`<div class="quick-actions-mobile">
+      <button class="btn btn-primary" id="m2newag">＋ Novo agendamento</button>
+      <button class="btn" id="m2today">📌 Hoje</button></div>
+      <div class="hr"></div>
+      ${list.length?list.map(x=>`<div class="card section-card-mobile"><b>${x.hora||'--:--'} • ${clientName(x.clienteId)}</b>
+      <div class="muted">${x.data} • ${x.tipo||'Serviço'}</div><div>${x.obs||''}</div></div>`).join(''):
+      '<div class="empty">Nenhum compromisso cadastrado.</div>'}`;
+    document.getElementById('m2newag').onclick=()=>newAgendaForm();
+    document.getElementById('m2today').onclick=()=>alert('Hoje: '+today2());
+  }
+  function newAgendaForm(){
+    const s=getState(), b=m2Root('Novo agendamento');
+    b.innerHTML=`<div class="field"><label>Cliente</label><select id="aCli">${clientOptions()}</select></div>
+    <div class="field-row"><div class="field"><label>Data</label><input id="aData" type="date" value="${today2()}"></div>
+    <div class="field"><label>Hora</label><input id="aHora" type="time"></div></div>
+    <div class="field"><label>Tipo</label><input id="aTipo" placeholder="Visita técnica / instalação / manutenção"></div>
+    <div class="field"><label>Observações</label><textarea id="aObs"></textarea></div>
+    <button class="btn btn-primary" id="aSave">Salvar</button>`;
+    document.getElementById('aSave').onclick=()=>{
+      s.agenda.push({id:uid2(),clienteId:document.getElementById('aCli').value,data:document.getElementById('aData').value,hora:document.getElementById('aHora').value,tipo:document.getElementById('aTipo').value,obs:document.getElementById('aObs').value});
+      save2('agenda',s.agenda); renderAgenda();
+    };
+  }
+
+  function renderServicos(){
+    const b=m2Root('🔧 Serviços','Fluxo rápido para acompanhar o trabalho.');
+    const s=getState(), list=s.servicos||[];
+    b.innerHTML=`<div class="quick-actions-mobile"><button class="btn btn-primary" id="m2newsv">＋ Novo serviço</button></div>
+    ${list.length?list.map(x=>`<div class="card section-card-mobile"><b>${x.titulo}</b><div class="muted">${clientName(x.clienteId)} • ${x.status}</div><div>${x.descricao||''}</div></div>`).join(''):'<div class="empty">Nenhum serviço em andamento.</div>'}`;
+    document.getElementById('m2newsv').onclick=()=>newServicoForm();
+  }
+  function newServicoForm(){
+    const s=getState(), b=m2Root('Novo serviço');
+    b.innerHTML=`<div class="field"><label>Cliente</label><select id="sCli">${clientOptions()}</select></div>
+    <div class="field"><label>Título</label><input id="sTit" placeholder="Ex.: Instalação de quadro"></div>
+    <div class="field"><label>Descrição / diagnóstico</label><textarea id="sDesc"></textarea></div>
+    <div class="field"><label>Status</label><select id="sStatus"><option>Agendado</option><option>Em execução</option><option>Concluído</option></select></div>
+    <button class="btn btn-primary" id="sSave">Salvar serviço</button>`;
+    document.getElementById('sSave').onclick=()=>{
+      s.servicos.push({id:uid2(),clienteId:document.getElementById('sCli').value,titulo:document.getElementById('sTit').value,descricao:document.getElementById('sDesc').value,status:document.getElementById('sStatus').value,data:today2()});
+      save2('servicos',s.servicos); renderServicos();
+    };
+  }
+
+  function renderOrdens(){
+    const b=m2Root('📋 Ordens de Serviço','Transforme o serviço aprovado em execução acompanhável.');
+    const s=getState(), list=s.ordens||[];
+    b.innerHTML=`<div class="quick-actions-mobile"><button class="btn btn-primary" id="m2newos">＋ Nova ordem</button></div>
+    ${list.length?list.map(x=>`<div class="card section-card-mobile"><b>OS ${x.numero}</b><div>${clientName(x.clienteId)}</div><div class="muted">${x.data} • ${x.status}</div><div>${x.descricao||''}</div></div>`).join(''):'<div class="empty">Nenhuma ordem de serviço.</div>'}`;
+    document.getElementById('m2newos').onclick=()=>newOSForm();
+  }
+  function newOSForm(){
+    const s=getState(), b=m2Root('Nova ordem de serviço');
+    const n=(s.ordens.length+1).toString().padStart(4,'0');
+    b.innerHTML=`<div class="field"><label>Cliente</label><select id="oCli">${clientOptions()}</select></div>
+    <div class="field"><label>Descrição do serviço</label><textarea id="oDesc"></textarea></div>
+    <div class="field"><label>Status</label><select id="oStatus"><option>Aberta</option><option>Em execução</option><option>Concluída</option></select></div>
+    <button class="btn btn-primary" id="oSave">Criar OS #${n}</button>`;
+    document.getElementById('oSave').onclick=()=>{
+      s.ordens.push({id:uid2(),numero:n,clienteId:document.getElementById('oCli').value,descricao:document.getElementById('oDesc').value,status:document.getElementById('oStatus').value,data:today2()});
+      save2('ordens',s.ordens); renderOrdens();
+    };
+  }
+
+  function renderFotos(){
+    const b=m2Root('📸 Fotos / Serviços','Registre evidências do serviço. As fotos podem ser vinculadas à OS.');
+    b.innerHTML=`<div class="field"><label>Ordem de serviço</label><select id="pOs"><option value="">Selecione...</option>${(getState().ordens||[]).map(o=>`<option value="${o.id}">OS ${o.numero} • ${clientName(o.clienteId)}</option>`).join('')}</select></div>
+    <div class="field"><label>Etapa</label><select id="pEtapa"><option>Antes</option><option>Durante</option><option>Depois</option></select></div>
+    <input id="pFile" type="file" accept="image/*" capture="environment" multiple>
+    <div id="pPreview" class="section-card-mobile"></div>`;
+    document.getElementById('pFile').onchange=e=>{
+      const box=document.getElementById('pPreview'); box.innerHTML='';
+      [...e.target.files].forEach(f=>{const im=document.createElement('img'); im.src=URL.createObjectURL(f); im.style='max-width:100%;border-radius:12px;margin-top:8px'; box.appendChild(im);});
+    };
+  }
+
+  function renderRelatorios(){
+    const b=m2Root('📊 Relatórios','Visão rápida do negócio e dos serviços.');
+    const s=getState();
+    const rec=(s.recibos||[]).reduce((a,x)=>a+(Number(x.valor)||0),0);
+    const desp=(s.despesas||[]).reduce((a,x)=>a+(Number(x.valor)||0),0);
+    const orc=(s.orcamentos||[]);
+    const aprov=orc.filter(x=>x.status==='aprovado').length;
+    const taxa=orc.length?Math.round(aprov/orc.length*100):0;
+    b.innerHTML=`<div class="grid grid-4">
+      <div class="stat"><div class="lbl">Recebido</div><div class="val">${money2(rec)}</div></div>
+      <div class="stat"><div class="lbl">Despesas</div><div class="val">${money2(desp)}</div></div>
+      <div class="stat"><div class="lbl">Saldo</div><div class="val">${money2(rec-desp)}</div></div>
+      <div class="stat"><div class="lbl">Aprovação</div><div class="val">${taxa}%</div></div>
+    </div>
+    <div class="card section-card-mobile"><b>Resumo</b><p>${orc.length} orçamento(s), ${aprov} aprovado(s), ${(s.ordens||[]).length} ordem(ns) de serviço e ${(s.servicos||[]).length} serviço(s) acompanhados.</p></div>`;
+  }
+
+  function boot(){
+    ensureData(); mountMobile();
+    // Mobile-only route additions are intentionally separate from the original router.
+    // Existing desktop navigation remains untouched.
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
+
+<script>
+/* ===== FL ELÉTRICA 2.1 — INTEGRATED WORKFLOW ===== */
+(function(){
+  const K='fl21_';
+  const today=()=>new Date().toISOString().slice(0,10);
+  const uid=()=>K+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  const brl=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function state(){return typeof STATE!=='undefined'?STATE:null}
+  function save(k,v){try{localStorage.setItem(K+k,JSON.stringify(v))}catch(e){}}
+  function load(k,d){try{return JSON.parse(localStorage.getItem(K+k)||'null')??d}catch(e){return d}}
+  function clients(){return state()?.clientes||[]}
+  function cname(id){return clients().find(x=>x.id===id)?.nome||'Cliente'}
+  function cOpts(id=''){return '<option value="">Selecione...</option>'+clients().map(c=>`<option value="${esc(c.id)}" ${c.id===id?'selected':''}>${esc(c.nome)}</option>`).join('')}
+  function data(){
+    const s=state(); if(!s)return null;
+    s.os21= s.os21 || load('os',[]);
+    s.visitas21=s.visitas21||load('visitas',[]);
+    s.fotos21=s.fotos21||load('fotos',[]);
+    return s;
+  }
+  function persist(s){save('os',s.os21);save('visitas',s.visitas21);save('fotos',s.fotos21)}
+  function root(title,sub=''){
+    const c=document.getElementById('content')||document.querySelector('main');
+    c.innerHTML=`<div class="card"><div class="section-title">${title}</div>${sub?`<div class="muted">${sub}</div>`:''}<div id="m21body"></div></div>`;
+    return document.getElementById('m21body');
+  }
+  function flow(status){
+    const steps=['Orçamento','Aprovado','OS','Execução','Concluído','Recebido'];
+    const map={orcamento:0,aprovado:1,aberta:2,execucao:3,concluida:4,recebido:5};
+    const n=map[status]??0;
+    return `<div class="m21-flow">${steps.map((x,i)=>`<div class="m21-step ${i<n?'done':i===n?'current':''}">${i<n?'✓ ':''}${x}</div>${i<steps.length-1?'<div class="m21-arrow">›</div>':''}`).join('')}</div>`;
+  }
+
+  window.FL21={
+    /* Create OS directly from an existing approved/open quote. */
+    createFromQuote(id){
+      const s=data(), o=(s.orcamentos||[]).find(x=>x.id===id);
+      if(!o)return alert('Orçamento não encontrado.');
+      const existing=s.os21.find(x=>x.orcamentoId===id);
+      if(existing){return this.viewOS(existing.id)}
+      const rec={id:uid(),numero:String(s.os21.length+1).padStart(4,'0'),orcamentoId:id,clienteId:o.clienteId,
+        descricao:(o.itens||[]).map(i=>`${i.qtd||1}x ${i.desc} — ${brl((i.qtd||0)*(i.valor||0))}`).join('\\n'),
+        valor:o.total||0,status:'aberta',data:today(),obs:o.obs||'',fotos:[]};
+      s.os21.push(rec); persist(s);
+      alert('Ordem de Serviço criada com sucesso.');
+      this.viewOS(rec.id);
+    },
+    viewOS(id){
+      const s=data(), o=s.os21.find(x=>x.id===id); if(!o)return;
+      const b=root(`📋 Ordem de Serviço #${o.numero}`,cname(o.clienteId));
+      b.innerHTML=`${flow(o.status)}
+      <div class="m21-card"><b>Cliente</b><div>${esc(cname(o.clienteId))}</div>
+      <div class="muted">${o.data} • ${esc(o.status)}</div></div>
+      <div class="m21-card"><b>Serviço</b><p>${esc(o.descricao).replace(/\\n/g,'<br>')}</p><b>Valor: ${brl(o.valor)}</b></div>
+      <div class="m21-card"><b>Observações</b><p>${esc(o.obs||'—')}</p></div>
+      <div class="m21-actions">
+        <button class="btn btn-primary" id="m21exec">▶ Iniciar execução</button>
+        <button class="btn" id="m21photos">📸 Fotos</button>
+        <button class="btn" id="m21finish">✓ Concluir serviço</button>
+        <button class="btn" id="m21receipt">💰 Gerar recebimento</button>
+      </div>`;
+      document.getElementById('m21exec').onclick=()=>this.setStatus(id,'execucao');
+      document.getElementById('m21finish').onclick=()=>this.setStatus(id,'concluida');
+      document.getElementById('m21photos').onclick=()=>this.photos(id);
+      document.getElementById('m21receipt').onclick=()=>this.receive(id);
+    },
+    setStatus(id,status){
+      const s=data(), o=s.os21.find(x=>x.id===id); if(!o)return;
+      o.status=status; persist(s); this.viewOS(id);
+    },
+    receive(id){
+      const s=data(), o=s.os21.find(x=>x.id===id); if(!o)return;
+      if(o.status!=='concluida') return alert('Conclua a OS antes de registrar o recebimento.');
+      /* Reuse the original receipt workflow when available. */
+      if(typeof openReciboForm==='function'){
+        openReciboForm();
+        setTimeout(()=>{
+          const cli=document.getElementById('rCliente'); if(cli)cli.value=o.clienteId;
+        },80);
+      }else{
+        o.status='recebido';persist(s);this.viewOS(id);
+      }
+    },
+    photos(id){
+      const s=data(), o=s.os21.find(x=>x.id===id); if(!o)return;
+      const b=root(`📸 Fotos — OS #${o.numero}`,cname(o.clienteId));
+      const photos=s.fotos21.filter(p=>p.osId===id);
+      b.innerHTML=`<div class="field"><label>Etapa</label><select id="m21stage"><option>Antes</option><option>Durante</option><option>Depois</option></select></div>
+      <div class="field"><label>Adicionar fotos</label><input id="m21files" type="file" accept="image/*" capture="environment" multiple></div>
+      <div class="m21-photo-grid" id="m21grid">${photos.map(p=>`<div class="m21-photo"><img src="${p.src}"><span>${esc(p.etapa)}</span></div>`).join('')}</div>
+      <button class="btn" id="m21back" style="margin-top:12px">← Voltar para OS</button>`;
+      document.getElementById('m21back').onclick=()=>this.viewOS(id);
+      document.getElementById('m21files').onchange=async e=>{
+        const etapa=document.getElementById('m21stage').value;
+        for(const f of [...e.target.files]){
+          const src=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsDataURL(f)});
+          s.fotos21.push({id:uid(),osId:id,etapa,src,data:today()});
+        }
+        persist(s); this.photos(id);
+      };
+    },
+    visitForm(){
+      const s=data(),b=root('🏠 Visita Técnica','Registre o diagnóstico e transforme a visita em serviço.');
+      b.innerHTML=`<div class="field"><label>Cliente</label><select id="m21vc">${cOpts()}</select></div>
+      <div class="field"><label>Problema relatado</label><textarea id="m21vp" placeholder="O que o cliente informou?"></textarea></div>
+      <div class="field"><label>Diagnóstico</label><textarea id="m21vd"></textarea></div>
+      <div class="field"><label>Materiais necessários</label><textarea id="m21vm" placeholder="Fios, disjuntores, DPS, DR..."></textarea></div>
+      <div class="field"><label>Observações</label><textarea id="m21vo"></textarea></div>
+      <button class="btn btn-primary" id="m21vs">Salvar visita</button>`;
+      document.getElementById('m21vs').onclick=()=>{
+        const rec={id:uid(),clienteId:m21vc.value,problema:m21vp.value,diagnostico:m21vd.value,materiais:m21vm.value,obs:m21vo.value,data:today()};
+        s.visitas21.push(rec);persist(s);alert('Visita registrada.');this.visitList();
+      };
+    },
+    visitList(){
+      const s=data(),b=root('🏠 Visitas Técnicas');
+      b.innerHTML=`<button class="btn btn-primary" id="m21newv">＋ Nova visita</button>
+      ${(s.visitas21||[]).map(v=>`<div class="m21-card"><b>${esc(cname(v.clienteId))}</b><div class="muted">${v.data}</div><p>${esc(v.diagnostico||v.problema||'Sem diagnóstico')}</p></div>`).join('')||'<div class="empty">Nenhuma visita registrada.</div>'}`;
+      document.getElementById('m21newv').onclick=()=>this.visitForm();
+    },
+    listOS(){
+      const s=data(),b=root('📋 Ordens de Serviço','Todos os serviços aprovados podem ser acompanhados aqui.');
+      b.innerHTML=`<div class="m21-kpis"><div class="m21-kpi">Abertas<div class="big">${s.os21.filter(x=>x.status==='aberta').length}</div></div>
+      <div class="m21-kpi">Em execução<div class="big">${s.os21.filter(x=>x.status==='execucao').length}</div></div>
+      <div class="m21-kpi">Concluídas<div class="big">${s.os21.filter(x=>x.status==='concluida').length}</div></div>
+      <div class="m21-kpi">Valor<div class="big">${brl(s.os21.reduce((a,x)=>a+(Number(x.valor)||0),0))}</div></div></div>
+      ${s.os21.map(o=>`<div class="m21-card"><b>OS #${o.numero}</b> <span class="m21-badge">${esc(o.status)}</span><div>${esc(cname(o.clienteId))}</div><div class="muted">${o.data} • ${brl(o.valor)}</div><button class="btn" data-os="${o.id}" style="margin-top:8px">Abrir</button></div>`).join('')||'<div class="empty">Nenhuma OS criada.</div>'}`;
+      b.querySelectorAll('[data-os]').forEach(x=>x.onclick=()=>this.viewOS(x.dataset.os));
+    },
+    dashboard(){
+      const s=data(),b=root('🏠 FL Elétrica','Central de produtividade');
+      const orc=s.orcamentos||[], aprov=orc.filter(o=>o.status==='aprovado');
+      b.innerHTML=`<div class="m21-kpis">
+      <div class="m21-kpi">Orçamentos pendentes<div class="big">${orc.filter(o=>o.status==='aberto').length}</div></div>
+      <div class="m21-kpi">Aprovados<div class="big">${aprov.length}</div></div>
+      <div class="m21-kpi">OS em execução<div class="big">${s.os21.filter(o=>o.status==='execucao').length}</div></div>
+      <div class="m21-kpi">A receber<div class="big">${brl(aprov.reduce((a,o)=>a+(Number(o.total)||0),0))}</div></div></div>
+      <div class="m21-card"><b>Fluxo rápido</b><div class="m21-actions" style="margin-top:10px">
+      <button class="btn btn-primary" id="m21v">🏠 Visita técnica</button>
+      <button class="btn" id="m21os">📋 Ordens de serviço</button>
+      <button class="btn" id="m21orc">🧾 Orçamentos</button>
+      <button class="btn" id="m21fin">💰 Financeiro</button></div></div>
+      <div class="m21-card"><b>Orçamentos aprovados</b>
+      ${aprov.map(o=>`<div style="padding:10px 0;border-bottom:1px solid var(--line,#29354a)"><b>${esc(cname(o.clienteId))}</b><div>${brl(o.total)} <button class="btn btn-sm" data-q="${o.id}">🚀 Gerar OS</button></div></div>`).join('')||'<div class="muted">Nenhum orçamento aprovado.</div>'}</div>`;
+      document.getElementById('m21v').onclick=()=>this.visitList();
+      document.getElementById('m21os').onclick=()=>this.listOS();
+      document.getElementById('m21orc').onclick=()=>typeof goTo==='function'&&goTo('orcamentos');
+      document.getElementById('m21fin').onclick=()=>typeof goTo==='function'&&goTo('financeiro');
+      b.querySelectorAll('[data-q]').forEach(x=>x.onclick=()=>this.createFromQuote(x.dataset.q));
+    }
+  };
+
+  /* Make the mobile menu's workflow entries use 2.1 screens. */
+  function patchMenu(){
+    document.querySelectorAll('[data-m2nav]').forEach(el=>{
+      if(el.dataset.m2patched)return;
+      const key=el.dataset.m2nav;
+      if(['inicio','servicos','ordens','fotos'].includes(key)){
+        el.addEventListener('click',e=>{
+          e.preventDefault(); e.stopImmediatePropagation();
+          if(key==='inicio')FL21.dashboard();
+          if(key==='servicos')FL21.visitList();
+          if(key==='ordens')FL21.listOS();
+          if(key==='fotos')FL21.listOS();
+        },true);
+        el.dataset.m2patched='1';
+      }
+    });
+  }
+
+  function init(){
+    data();
+    setTimeout(patchMenu,150);
+    /* Add an unobtrusive "Gerar OS" action to the original quote view whenever it opens. */
+    const old=window.openDocView;
+    if(typeof old==='function' && !old.__fl21){
+      const wrapped=function(kind,id){
+        const r=old.apply(this,arguments);
+        setTimeout(()=>{
+          if(kind==='orcamentos' && !document.getElementById('fl21quoteAction')){
+            const target=document.querySelector('.modal')||document.body;
+            const btn=document.createElement('button');
+            btn.id='fl21quoteAction';btn.className='btn btn-primary';btn.textContent='🚀 Gerar Ordem de Serviço';
+            btn.style='margin:8px';
+            btn.onclick=()=>FL21.createFromQuote(id);
+            target.appendChild(btn);
+          }
+        },120);
+        return r;
+      };
+      wrapped.__fl21=true; window.openDocView=wrapped;
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+</body>
+</html>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}</script>
